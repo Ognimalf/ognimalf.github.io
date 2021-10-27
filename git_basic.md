@@ -9,5 +9,8 @@
 5. `git add` 可以将文件添加到暂存区, `git add .` 将所有文件添加到暂存区, 添加后可以用`git status -s` 查看文件
 6. `git rm --cache FILE` 删除暂存区文件
 7. `git commit` 提交最新的代码, 可用选项 `-a` 能够提交修改过的文件并提交
-8. `git push` 将本地分支上传到远程并合并 
+8. `git log` 可以查看commit的历史
+9. `git rebase` 在commit之后,最新的提交并不与远程的分支相同,此时需要合并commit
+10. `git pull` 在`git commit`之后如果直接push操作可能导致失败,因为本地仓库落后于远程仓库,因此我们需要先将远程的分支抓取过来
+11. `git push` 将本地分支上传到远程并合并 
    `git push origin master` 将本地分支上传到origin主机的master分支
