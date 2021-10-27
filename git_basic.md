@@ -13,4 +13,5 @@
 9. `git rebase` 在commit之后,最新的提交并不与远程的分支相同,此时需要合并commit
 10. `git pull` 在`git commit`之后如果直接push操作可能导致失败,因为本地仓库落后于远程仓库,因此我们需要先将远程的分支抓取过来
 11. `git push` 将本地分支上传到远程并合并 
-   `git push origin master` 将本地分支上传到origin主机的master分支
+   `git push origin master` 将本地分支上传到origin主机的master分
+12. **gitHub:** `git config --global http.sslVerify "false"` 在push时应对`OpenSSL SSL_read: Connection was reset, errno 10054`的一种方法
