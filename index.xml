@@ -17,54 +17,6 @@
     </item>
     
     <item>
-      <title>链接与静态链接</title>
-      <link>https://ognimalf.github.io/posts/linker1/</link>
-      <pubDate>Sat, 23 Apr 2022 17:42:40 +0900</pubDate>
-      
-      <guid>https://ognimalf.github.io/posts/linker1/</guid>
-      <description>这周快速的读过了一本有关链接与装载的书,也就是《程序员的自我修养》.看这本书主要也是上课CSAPP讲到链接这部分知识,想起上学期看CSAPP中那短短一章已经没什么印象了,不如就找一本内容更丰富的了解以下,顺便做一下笔记.这本书写于06年,感觉还是有点早,不知道有关这部分的技术到现在有什么变化,但是对于我这样的新手来说,应该也是绰绰有余了.这部分的内容主要也是对书中的知识做一下简单的梳理,也方便自己有空的时候复习.
-看书的时候感觉也补齐了一些知识面上的空白,个人认为这部分更偏向程序底层组织的内容,一般的操作系统课程也没有很深入讲过,链接与装载的过程却与这些息息相关.内容主要是关于c/c++程序的链接与组织,我主要学习linux的部分.有点语无伦次,算了,随便写写.
-链接概述 链接主要分为静态链接与动态链接两种形式.二者之间的主要区别在于静态链接将一个程序中使用到的所有外部符号链接组织成单个文件,程序中所有涉及的外部函数,外部变量以及一些辅助的数据结构都会被链接到一个文件中.显然,当我们执行多个程序时,每个可执行文件中都包含了公共的库函数,整个文件都需要被装载至内存空间,这样会导致内存空间的浪费.
-而动态链接将程序的模块分割,形成独立的文件,并且把链接的过程推迟到程序运行时再进行.这样比较好的解决了内存浪费的问题.
-整个链接的过程主要分两个阶段:
- 空间与地址分配 符号解析与重定位  空间与地址分配 对于多个输入文件的各个段,链接器一般通过将各文件中相同性质的段合并到一起,比如所有输入文件的.text段合并到输出文件的.text段中.这一步链接器获取各个段的长度,计算合并之后段的长度与位置,建立映射关系.
-同时在合并的过程中,链接器收集各个文件中符号表的符号定义与引用,最后在输出文件中组织成全局符号表.
-输出文件各个段在连接之后虚拟地址就被确定,之后链接器结合输入文件中符号引用相对于段的偏移量以及合并之后段的位置计算得到各个符号引用的最终位置.
-* 在Linux下,ELF可执行文件默认从地址0x08048000开始分配.
-符号解析与重定位 重定位 重定位是静态链接的核心内容.在输入的可重定位文件中,一些函数的地址在汇编代码中并不是确定的,因为这些函数可能定义在其他文件之中.因此编译器暂时将0看作函数的地址,或者是在这里填入相对偏移量,用于之后链接器计算确定的地址.
-// TODO: 配一张编译文件的图,主要表现可重定位文件的地址.</description>
-    </item>
-    
-    <item>
-      <title>Ch8 Linux共享库组织</title>
-      <link>https://ognimalf.github.io/archives/linker/ch8/</link>
-      <pubDate>Wed, 20 Apr 2022 14:36:14 +0900</pubDate>
-      
-      <guid>https://ognimalf.github.io/archives/linker/ch8/</guid>
-      <description>Linux下的共享库其实就是ELF共享对象.
-1.兼容性
-2.版本名</description>
-    </item>
-    
-    <item>
-      <title>第4章 数据编码与演化</title>
-      <link>https://ognimalf.github.io/archives/chapter4/</link>
-      <pubDate>Sun, 07 Nov 2021 23:16:02 +0900</pubDate>
-      
-      <guid>https://ognimalf.github.io/archives/chapter4/</guid>
-      <description>第4章知识精要</description>
-    </item>
-    
-    <item>
-      <title>go语言学习</title>
-      <link>https://ognimalf.github.io/archives/go_learning/</link>
-      <pubDate>Sun, 07 Nov 2021 15:14:54 +0900</pubDate>
-      
-      <guid>https://ognimalf.github.io/archives/go_learning/</guid>
-      <description>go语法知识</description>
-    </item>
-    
-    <item>
       <title>Git Basic</title>
       <link>https://ognimalf.github.io/archives/git_basic/</link>
       <pubDate>Sat, 30 Oct 2021 09:01:41 -0700</pubDate>

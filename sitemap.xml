@@ -3,6 +3,16 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>https://ognimalf.github.io/categories/</loc>
+    <lastmod>2022-05-09T08:57:52+09:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://ognimalf.github.io/tags/gradle/</loc>
+    <lastmod>2022-05-09T08:57:52+09:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://ognimalf.github.io/archives/software-structure/</loc>
     <lastmod>2022-05-09T08:57:52+09:00</lastmod>
   </url>
@@ -18,53 +28,18 @@
   </url>
   
   <url>
-    <loc>https://ognimalf.github.io/posts/linker1/</loc>
-    <lastmod>2022-04-23T17:42:40+09:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://ognimalf.github.io/archives/linker/ch8/</loc>
-    <lastmod>2022-04-20T14:36:14+09:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://ognimalf.github.io/tags/book-notes/</loc>
-    <lastmod>2021-11-07T23:16:02+09:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://ognimalf.github.io/categories/book-notes/</loc>
-    <lastmod>2021-11-07T23:16:02+09:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://ognimalf.github.io/categories/</loc>
-    <lastmod>2021-11-07T23:16:02+09:00</lastmod>
-  </url>
-  
-  <url>
     <loc>https://ognimalf.github.io/tags/</loc>
-    <lastmod>2021-11-07T23:16:02+09:00</lastmod>
+    <lastmod>2022-05-09T08:57:52+09:00</lastmod>
   </url>
   
   <url>
-    <loc>https://ognimalf.github.io/archives/chapter4/</loc>
-    <lastmod>2021-11-07T23:16:02+09:00</lastmod>
+    <loc>https://ognimalf.github.io/tags/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/</loc>
+    <lastmod>2022-05-09T08:57:52+09:00</lastmod>
   </url>
   
   <url>
-    <loc>https://ognimalf.github.io/tags/go/</loc>
-    <lastmod>2021-11-07T15:14:54+09:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://ognimalf.github.io/archives/go_learning/</loc>
-    <lastmod>2021-11-07T15:14:54+09:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://ognimalf.github.io/categories/programming-language/</loc>
-    <lastmod>2021-11-07T15:14:54+09:00</lastmod>
+    <loc>https://ognimalf.github.io/categories/%E8%BD%AF%E4%BB%B6%E6%9E%84%E9%80%A0/</loc>
+    <lastmod>2022-05-09T08:57:52+09:00</lastmod>
   </url>
   
   <url>
