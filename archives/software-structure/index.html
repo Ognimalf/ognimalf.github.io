@@ -238,7 +238,7 @@ taskA
 taskB
 </code></pre></div><p>通过添加依赖我们可以指定任务执行的顺序,这样更方便我们进行项目构建.<br>
 下图是gradle官方文档给出的build task的依赖关系:</p>
-<p><img loading="lazy" src="../../static/images/javaPluginTasks.png" alt="build 的依赖关系"  />
+<p><img loading="lazy" src="images/javaPluginTasks.png" alt="build 的依赖关系"  />
 </p>
 <p>同样,我们既可以指定一个任务作为某些任务的后置,我们也可以指定它们作为一些任务的前置,我们可以使用 <code>finalizeBy</code> 来指定这种依赖关系.</p>
 <h4 id="sourceset">SourceSet<a hidden class="anchor" aria-hidden="true" href="#sourceset">#</a></h4>
@@ -311,7 +311,7 @@ taskB
     <span style="color:#f92672">}</span>
 <span style="color:#f92672">}</span>
 </code></pre></div><div align="center">
-    <img src="../../static/images/ugly.png" width="30%" height="30%"/>
+    <img src="images/ugly.png" width="30%" height="30%"/>
     <center><font size=2>丑陋且不理想的效果</font></center>
 </div>
 <p>那么我如果既不想src中的文件夹添加进test目录,又想把里面的测试文件在构建阶段执行测试,该怎么办呢?</p>
