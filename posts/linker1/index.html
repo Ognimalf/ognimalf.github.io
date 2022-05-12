@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>链接与静态链接 | Salieri&#39;s Blog</title>
+<meta name="keywords" content="" />
+<meta name="description" content="这周快速的读过了一本有关链接与装载的书,也就是《程序员的自我修养》.看这本书主要也是上课CSAPP讲到链接这部分知识,想起上学期看CSAPP中那短短一章已经没什么印象了,不如就找一本内容更丰富的了解以下,顺便做一下笔记.这本书写于06年,感觉还是有点早,不知道有关这部分的技术到现在有什么变化,但是对于我这样的新手来说,应该也是绰绰有余了.这部分的内容主要也是对书中的知识做一下简单的梳理,也方便自己有空的时候复习.
+看书的时候感觉也补齐了一些知识面上的空白,个人认为这部分更偏向程序底层组织的内容,一般的操作系统课程也没有很深入讲过,链接与装载的过程却与这些息息相关.内容主要是关于c/c&#43;&#43;程序的链接与组织,我主要学习linux的部分.有点语无伦次,算了,随便写写.
+链接概述 链接主要分为静态链接与动态链接两种形式.二者之间的主要区别在于静态链接将一个程序中使用到的所有外部符号链接组织成单个文件,程序中所有涉及的外部函数,外部变量以及一些辅助的数据结构都会被链接到一个文件中.显然,当我们执行多个程序时,每个可执行文件中都包含了公共的库函数,整个文件都需要被装载至内存空间,这样会导致内存空间的浪费.
+而动态链接将程序的模块分割,形成独立的文件,并且把链接的过程推迟到程序运行时再进行.这样比较好的解决了内存浪费的问题.
+整个链接的过程主要分两个阶段:
+ 空间与地址分配 符号解析与重定位  空间与地址分配 对于多个输入文件的各个段,链接器一般通过将各文件中相同性质的段合并到一起,比如所有输入文件的.text段合并到输出文件的.text段中.这一步链接器获取各个段的长度,计算合并之后段的长度与位置,建立映射关系.
+同时在合并的过程中,链接器收集各个文件中符号表的符号定义与引用,最后在输出文件中组织成全局符号表.
+输出文件各个段在连接之后虚拟地址就被确定,之后链接器结合输入文件中符号引用相对于段的偏移量以及合并之后段的位置计算得到各个符号引用的最终位置.
+* 在Linux下,ELF可执行文件默认从地址0x08048000开始分配.
+符号解析与重定位 重定位 重定位是静态链接的核心内容.在输入的可重定位文件中,一些函数的地址在汇编代码中并不是确定的,因为这些函数可能定义在其他文件之中.因此编译器暂时将0看作函数的地址,或者是在这里填入相对偏移量,用于之后链接器计算确定的地址.
+// TODO: 配一张编译文件的图,主要表现可重定位文件的地址.">
+<meta name="author" content="">
+<link rel="canonical" href="https://ognimalf.github.io/posts/linker1/" />
+<link crossorigin="anonymous" href="/assets/css/stylesheet.min.61dfb3f0b4cda95d2ccb867f9a3b244ce5d23e12492bcc3c277df594c7bc1adf.css" integrity="sha256-Yd&#43;z8LTNqV0sy4Z/mjskTOXSPhJJK8w8J331lMe8Gt8=" rel="preload stylesheet" as="style">
+<script defer crossorigin="anonymous" src="/assets/js/highlight.min.27cd435cc9ed6abb4b496581b151804f79f366c412620272bb94e2f5f598ebcc.js" integrity="sha256-J81DXMntartLSWWBsVGAT3nzZsQSYgJyu5Ti9fWY68w="
+    onload="hljs.initHighlightingOnLoad();"></script>
+<link rel="icon" href="https://ognimalf.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://ognimalf.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://ognimalf.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://ognimalf.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://ognimalf.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<meta name="generator" content="Hugo 0.68.3" />
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --hljs-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><meta property="og:title" content="链接与静态链接" />
+<meta property="og:description" content="这周快速的读过了一本有关链接与装载的书,也就是《程序员的自我修养》.看这本书主要也是上课CSAPP讲到链接这部分知识,想起上学期看CSAPP中那短短一章已经没什么印象了,不如就找一本内容更丰富的了解以下,顺便做一下笔记.这本书写于06年,感觉还是有点早,不知道有关这部分的技术到现在有什么变化,但是对于我这样的新手来说,应该也是绰绰有余了.这部分的内容主要也是对书中的知识做一下简单的梳理,也方便自己有空的时候复习.
+看书的时候感觉也补齐了一些知识面上的空白,个人认为这部分更偏向程序底层组织的内容,一般的操作系统课程也没有很深入讲过,链接与装载的过程却与这些息息相关.内容主要是关于c/c&#43;&#43;程序的链接与组织,我主要学习linux的部分.有点语无伦次,算了,随便写写.
+链接概述 链接主要分为静态链接与动态链接两种形式.二者之间的主要区别在于静态链接将一个程序中使用到的所有外部符号链接组织成单个文件,程序中所有涉及的外部函数,外部变量以及一些辅助的数据结构都会被链接到一个文件中.显然,当我们执行多个程序时,每个可执行文件中都包含了公共的库函数,整个文件都需要被装载至内存空间,这样会导致内存空间的浪费.
+而动态链接将程序的模块分割,形成独立的文件,并且把链接的过程推迟到程序运行时再进行.这样比较好的解决了内存浪费的问题.
+整个链接的过程主要分两个阶段:
+ 空间与地址分配 符号解析与重定位  空间与地址分配 对于多个输入文件的各个段,链接器一般通过将各文件中相同性质的段合并到一起,比如所有输入文件的.text段合并到输出文件的.text段中.这一步链接器获取各个段的长度,计算合并之后段的长度与位置,建立映射关系.
+同时在合并的过程中,链接器收集各个文件中符号表的符号定义与引用,最后在输出文件中组织成全局符号表.
+输出文件各个段在连接之后虚拟地址就被确定,之后链接器结合输入文件中符号引用相对于段的偏移量以及合并之后段的位置计算得到各个符号引用的最终位置.
+* 在Linux下,ELF可执行文件默认从地址0x08048000开始分配.
+符号解析与重定位 重定位 重定位是静态链接的核心内容.在输入的可重定位文件中,一些函数的地址在汇编代码中并不是确定的,因为这些函数可能定义在其他文件之中.因此编译器暂时将0看作函数的地址,或者是在这里填入相对偏移量,用于之后链接器计算确定的地址.
+// TODO: 配一张编译文件的图,主要表现可重定位文件的地址." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ognimalf.github.io/posts/linker1/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-04-23T17:42:40&#43;09:00" />
+<meta property="article:modified_time" content="2022-04-23T17:42:40&#43;09:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="链接与静态链接"/>
+<meta name="twitter:description" content="这周快速的读过了一本有关链接与装载的书,也就是《程序员的自我修养》.看这本书主要也是上课CSAPP讲到链接这部分知识,想起上学期看CSAPP中那短短一章已经没什么印象了,不如就找一本内容更丰富的了解以下,顺便做一下笔记.这本书写于06年,感觉还是有点早,不知道有关这部分的技术到现在有什么变化,但是对于我这样的新手来说,应该也是绰绰有余了.这部分的内容主要也是对书中的知识做一下简单的梳理,也方便自己有空的时候复习.
+看书的时候感觉也补齐了一些知识面上的空白,个人认为这部分更偏向程序底层组织的内容,一般的操作系统课程也没有很深入讲过,链接与装载的过程却与这些息息相关.内容主要是关于c/c&#43;&#43;程序的链接与组织,我主要学习linux的部分.有点语无伦次,算了,随便写写.
+链接概述 链接主要分为静态链接与动态链接两种形式.二者之间的主要区别在于静态链接将一个程序中使用到的所有外部符号链接组织成单个文件,程序中所有涉及的外部函数,外部变量以及一些辅助的数据结构都会被链接到一个文件中.显然,当我们执行多个程序时,每个可执行文件中都包含了公共的库函数,整个文件都需要被装载至内存空间,这样会导致内存空间的浪费.
+而动态链接将程序的模块分割,形成独立的文件,并且把链接的过程推迟到程序运行时再进行.这样比较好的解决了内存浪费的问题.
+整个链接的过程主要分两个阶段:
+ 空间与地址分配 符号解析与重定位  空间与地址分配 对于多个输入文件的各个段,链接器一般通过将各文件中相同性质的段合并到一起,比如所有输入文件的.text段合并到输出文件的.text段中.这一步链接器获取各个段的长度,计算合并之后段的长度与位置,建立映射关系.
+同时在合并的过程中,链接器收集各个文件中符号表的符号定义与引用,最后在输出文件中组织成全局符号表.
+输出文件各个段在连接之后虚拟地址就被确定,之后链接器结合输入文件中符号引用相对于段的偏移量以及合并之后段的位置计算得到各个符号引用的最终位置.
+* 在Linux下,ELF可执行文件默认从地址0x08048000开始分配.
+符号解析与重定位 重定位 重定位是静态链接的核心内容.在输入的可重定位文件中,一些函数的地址在汇编代码中并不是确定的,因为这些函数可能定义在其他文件之中.因此编译器暂时将0看作函数的地址,或者是在这里填入相对偏移量,用于之后链接器计算确定的地址.
+// TODO: 配一张编译文件的图,主要表现可重定位文件的地址."/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [, 
+    {
+      "@type": "ListItem",
+      "position":  3 ,
+      "name": "链接与静态链接",
+      "item": "https://ognimalf.github.io/posts/linker1/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "链接与静态链接",
+  "name": "链接与静态链接",
+  "description": "这周快速的读过了一本有关链接与装载的书,也就是《程序员的自我修养》.看这本书主要也是上课CSAPP讲到链接这部分知识,想起上学期看CSAPP中那短短一章已经没什么印象了,不如就找一本内容更丰富的了解以下,顺便做一下笔记.这本书写于06年,感觉还是有点早,不知道有关这部分的技术到现在有什么变化,但是对于我这样的新手来说,应该也是绰绰有余了.这部分的内容主要也是对书中的知识做一下简单的梳理,也方便自己有空的时候复习.\n看书的时候感觉也补齐了一些知识面上的空白,个人认为这部分更偏向程序底层组织的内容,一般的操作系统课程也没有很深入讲过,链接与装载的过程却与这些息息相关.内容主要是关于c/c++程序的链接与组织,我主要学习linux的部分.有点语无伦次,算了,随便写写.\n链接概述 链接主要分为静态链接与动态链接两种形式.二者之间的主要区别在于静态链接将一个程序中使用到的所有外部符号链接组织成单个文件,程序中所有涉及的外部函数,外部变量以及一些辅助的数据结构都会被链接到一个文件中.显然,当我们执行多个程序时,每个可执行文件中都包含了公共的库函数,整个文件都需要被装载至内存空间,这样会导致内存空间的浪费.\n而动态链接将程序的模块分割,形成独立的文件,并且把链接的过程推迟到程序运行时再进行.这样比较好的解决了内存浪费的问题.\n整个链接的过程主要分两个阶段:\n 空间与地址分配 符号解析与重定位  空间与地址分配 对于多个输入文件的各个段,链接器一般通过将各文件中相同性质的段合并到一起,比如所有输入文件的.text段合并到输出文件的.text段中.这一步链接器获取各个段的长度,计算合并之后段的长度与位置,建立映射关系.\n同时在合并的过程中,链接器收集各个文件中符号表的符号定义与引用,最后在输出文件中组织成全局符号表.\n输出文件各个段在连接之后虚拟地址就被确定,之后链接器结合输入文件中符号引用相对于段的偏移量以及合并之后段的位置计算得到各个符号引用的最终位置.\n* 在Linux下,ELF可执行文件默认从地址0x08048000开始分配.\n符号解析与重定位 重定位 重定位是静态链接的核心内容.在输入的可重定位文件中,一些函数的地址在汇编代码中并不是确定的,因为这些函数可能定义在其他文件之中.因此编译器暂时将0看作函数的地址,或者是在这里填入相对偏移量,用于之后链接器计算确定的地址.\n// TODO: 配一张编译文件的图,主要表现可重定位文件的地址.",
+  "keywords": [
+    
+  ],
+  "articleBody": "这周快速的读过了一本有关链接与装载的书,也就是《程序员的自我修养》.看这本书主要也是上课CSAPP讲到链接这部分知识,想起上学期看CSAPP中那短短一章已经没什么印象了,不如就找一本内容更丰富的了解以下,顺便做一下笔记.这本书写于06年,感觉还是有点早,不知道有关这部分的技术到现在有什么变化,但是对于我这样的新手来说,应该也是绰绰有余了.这部分的内容主要也是对书中的知识做一下简单的梳理,也方便自己有空的时候复习.\n看书的时候感觉也补齐了一些知识面上的空白,个人认为这部分更偏向程序底层组织的内容,一般的操作系统课程也没有很深入讲过,链接与装载的过程却与这些息息相关.内容主要是关于c/c++程序的链接与组织,我主要学习linux的部分.有点语无伦次,算了,随便写写.\n链接概述 链接主要分为静态链接与动态链接两种形式.二者之间的主要区别在于静态链接将一个程序中使用到的所有外部符号链接组织成单个文件,程序中所有涉及的外部函数,外部变量以及一些辅助的数据结构都会被链接到一个文件中.显然,当我们执行多个程序时,每个可执行文件中都包含了公共的库函数,整个文件都需要被装载至内存空间,这样会导致内存空间的浪费.\n而动态链接将程序的模块分割,形成独立的文件,并且把链接的过程推迟到程序运行时再进行.这样比较好的解决了内存浪费的问题.\n整个链接的过程主要分两个阶段:\n 空间与地址分配 符号解析与重定位  空间与地址分配 对于多个输入文件的各个段,链接器一般通过将各文件中相同性质的段合并到一起,比如所有输入文件的.text段合并到输出文件的.text段中.这一步链接器获取各个段的长度,计算合并之后段的长度与位置,建立映射关系.\n同时在合并的过程中,链接器收集各个文件中符号表的符号定义与引用,最后在输出文件中组织成全局符号表.\n输出文件各个段在连接之后虚拟地址就被确定,之后链接器结合输入文件中符号引用相对于段的偏移量以及合并之后段的位置计算得到各个符号引用的最终位置.\n* 在Linux下,ELF可执行文件默认从地址0x08048000开始分配.\n符号解析与重定位 重定位 重定位是静态链接的核心内容.在输入的可重定位文件中,一些函数的地址在汇编代码中并不是确定的,因为这些函数可能定义在其他文件之中.因此编译器暂时将0看作函数的地址,或者是在这里填入相对偏移量,用于之后链接器计算确定的地址.\n// TODO: 配一张编译文件的图,主要表现可重定位文件的地址.\n",
+  "wordCount" : "20",
+  "inLanguage": "en",
+  "datePublished": "2022-04-23T17:42:40+09:00",
+  "dateModified": "2022-04-23T17:42:40+09:00",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://ognimalf.github.io/posts/linker1/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Salieri's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://ognimalf.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://ognimalf.github.io" accesskey="h" title="Salieri&#39;s Blog (Alt + H)">Salieri&#39;s Blog</a>
+            <span class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </span>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://ognimalf.github.io/categories/" title="categories">
+                    <span>categories</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://ognimalf.github.io/tags/" title="tags">
+                    <span>tags</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="https://ognimalf.github.io">Home</a></div>
+    <h1 class="post-title">
+      链接与静态链接<sup><span class="entry-isdraft">&nbsp;&nbsp;[draft]</span></sup>
+    </h1>
+    <div class="post-meta"><span title='2022-04-23 17:42:40 +0900 KST'>April 23, 2022</span>
+
+</div>
+  </header> 
+  <div class="post-content"><p>这周快速的读过了一本有关链接与装载的书,也就是《程序员的自我修养》.看这本书主要也是上课CSAPP讲到链接这部分知识,想起上学期看CSAPP中那短短一章已经没什么印象了,不如就找一本内容更丰富的了解以下,顺便做一下笔记.这本书写于06年,感觉还是有点早,不知道有关这部分的技术到现在有什么变化,但是对于我这样的新手来说,应该也是绰绰有余了.这部分的内容主要也是对书中的知识做一下简单的梳理,也方便自己有空的时候复习.<br>
+看书的时候感觉也补齐了一些知识面上的空白,个人认为这部分更偏向程序底层组织的内容,一般的操作系统课程也没有很深入讲过,链接与装载的过程却与这些息息相关.内容主要是关于c/c++程序的链接与组织,我主要学习linux的部分.有点语无伦次,算了,随便写写.</p>
+<h3 id="链接概述">链接概述<a hidden class="anchor" aria-hidden="true" href="#链接概述">#</a></h3>
+<p>链接主要分为静态链接与动态链接两种形式.二者之间的主要区别在于静态链接将一个程序中使用到的所有外部符号链接组织成单个文件,程序中所有涉及的外部函数,外部变量以及一些辅助的数据结构都会被链接到一个文件中.显然,当我们执行多个程序时,每个可执行文件中都包含了公共的库函数,整个文件都需要被装载至内存空间,这样会导致内存空间的浪费.<br>
+而动态链接将程序的模块分割,形成独立的文件,并且把链接的过程推迟到程序运行时再进行.这样比较好的解决了内存浪费的问题.</p>
+<p>整个链接的过程主要分两个阶段:</p>
+<ol>
+<li>空间与地址分配</li>
+<li>符号解析与重定位</li>
+</ol>
+<h3 id="空间与地址分配">空间与地址分配<a hidden class="anchor" aria-hidden="true" href="#空间与地址分配">#</a></h3>
+<p>对于多个输入文件的各个段,链接器一般通过将各文件中相同性质的段合并到一起,比如所有输入文件的<code>.text</code>段合并到输出文件的<code>.text</code>段中.这一步链接器获取各个段的长度,计算合并之后段的长度与位置,建立映射关系.</p>
+<p>同时在合并的过程中,链接器收集各个文件中符号表的符号定义与引用,最后在输出文件中组织成全局符号表.</p>
+<p>输出文件各个段在连接之后虚拟地址就被确定,之后链接器结合输入文件中符号引用相对于段的偏移量以及合并之后段的位置计算得到各个符号引用的最终位置.</p>
+<p>* 在Linux下,ELF可执行文件默认从地址0x08048000开始分配.</p>
+<h3 id="符号解析与重定位">符号解析与重定位<a hidden class="anchor" aria-hidden="true" href="#符号解析与重定位">#</a></h3>
+<h4 id="重定位">重定位<a hidden class="anchor" aria-hidden="true" href="#重定位">#</a></h4>
+<p>重定位是静态链接的核心内容.在输入的可重定位文件中,一些函数的地址在汇编代码中并不是确定的,因为这些函数可能定义在其他文件之中.因此编译器暂时将0看作函数的地址,或者是在这里填入相对偏移量,用于之后链接器计算确定的地址.</p>
+<p>// TODO: 配一张编译文件的图,主要表现可重定位文件的地址.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+  </footer>
+</article>
+    </main>
+    
+<script src="https://cdn.bootcss.com/mermaid/8.0.0-rc.8/mermaid.min.js"></script>
+<footer class="footer">
+    <span>&copy; 2022 <a href="https://ognimalf.github.io">Salieri&#39;s Blog</a></span>
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://git.io/hugopapermod" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerText = 'copy';
+
+        function copyingDone() {
+            copybutton.innerText = 'copied!';
+            setTimeout(() => {
+                copybutton.innerText = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

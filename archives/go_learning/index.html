@@ -93,8 +93,8 @@
   "keywords": [
     "go"
   ],
-  "articleBody": "go语言基本知识 这里记录一些go语言的语法特点,留待日后整理\n slice,map 变量, 指针类型等默认值为 nil 支持语法 a, b = b, a , 同样对于不同数据类型的变量a, b, a, b := val1, val2 也是可以的 关于go package的可访问性,对于结构体与结构体内的方法,go中都用大写字母表示该结构体/方法在其他包中可见,小写字母表示不可访问. 而在同一包中的函数可以访问所有这些方法  graph TD a[a+b+c+g?d+e+f+h] -- |,|=| b2(i+j?k+l) b1(a+b+c?d+e+f) -- || c1(a+d?b+e) b1(a+b+c?d+e+f) -- |=| c2(g?h) b1(a+b+c?d+e+f) -- ||| c4(i+k?j+l) b2(i+j?k+l) -- ||| d1(a?b) c1(a+d?b+e) -- |=| d2(c?g) c1(a+d?b+e) -- ||| d4(g?a) c2(g?h) -- ||| d6(a?b) c3(a+d?b+e) -- |=| d7(c?g) c3(a+d?b+e) -- ||| d9(i?a) c4(i+k?j+l) -- ||| d11(k?a) c5(i+k?j+l) -- ||| e1(a H) d1(a?b) -- |=| e2(e L) d2(c?g) -- || e3(c H) d2(c?g) -- |=| e4(f L) d3(a?b) -- ||=| e6(d L) d4(g?a) -- || e0(g H) d4(g?a) -- |=| d01(h L) d5(g?a) -- ||=| d03(h H) d6(a?b) -- || e7(b L) d6(a?b) -- |=| e8(d H) d7(c?g) -- ||=| e10(f H) d8(a?b) -- ||=| e12(e H) d9(i?a) -- || e13(i H) d9(i?a) -- |=| e14(l L) d10(k?a) -- ||=| e16(j H) d11(k?a) -- || e17(k H) d11(k?a) -- |=| e18(j L) d12(i?a) -- ||=| e20(l H)   mermaid.initialize({ startOnLoad: true, securityLevel: 'loose'}); ",
-  "wordCount" : "165",
+  "articleBody": "这里记录一些go语言的语法特点,留待日后整理\n slice,map 变量, 指针类型等默认值为 nil 支持语法 a, b = b, a , 同样对于不同数据类型的变量a, b, a, b := val1, val2 也是可以的 关于go package的可访问性,对于结构体与结构体内的方法,go中都用大写字母表示该结构体/方法在其他包中可见,小写字母表示不可访问. 而在同一包中的函数可以访问所有这些方法  go test ",
+  "wordCount" : "25",
   "inLanguage": "en",
   "datePublished": "2021-11-07T15:14:54+09:00",
   "dateModified": "2021-11-07T15:14:54+09:00",
@@ -173,71 +173,20 @@
   <header class="post-header">
     <div class="breadcrumbs"><a href="https://ognimalf.github.io">Home</a></div>
     <h1 class="post-title">
-      go语言学习<sup><span class="entry-isdraft">&nbsp;&nbsp;[draft]</span></sup>
+      go语言学习
     </h1>
     <div class="post-meta"><span title='2021-11-07 15:14:54 +0900 KST'>November 7, 2021</span>
 
 </div>
   </header> 
-  <div class="post-content"><h3 id="go语言基本知识">go语言基本知识<a hidden class="anchor" aria-hidden="true" href="#go语言基本知识">#</a></h3>
-<p>这里记录一些go语言的语法特点,留待日后整理</p>
+  <div class="post-content"><p>这里记录一些go语言的语法特点,留待日后整理</p>
 <ol>
 <li><code>slice,map</code> 变量, 指针类型等默认值为 <code>nil</code></li>
 <li>支持语法 <code>a, b = b, a</code> , 同样对于不同数据类型的变量a, b, <code>a, b := val1, val2</code> 也是可以的</li>
 <li>关于go package的可访问性,对于结构体与结构体内的方法,go中都用大写字母表示该结构体/方法在其他包中可见,小写字母表示不可访问.
 而在同一包中的函数可以访问所有这些方法</li>
 </ol>
-
-<div class="mermaid" align="center">
-graph TD
-a[a+b+c+g?d+e+f+h] --> |>,<| b1(a+b+c?d+e+f)
-a[a+b+c+g?d+e+f+h] --> |=| b2(i+j?k+l)
-b1(a+b+c?d+e+f) --> |>| c1(a+d?b+e)
-b1(a+b+c?d+e+f) --> |=| c2(g?h)
-b1(a+b+c?d+e+f) --> |<| c3(a+d?b+e)
-b2(i+j?k+l) --> |>| c4(i+k?j+l)
-b2(i+j?k+l) --> |<| c5(i+k?j+l)
-c1(a+d?b+e) --> |>| d1(a?b)
-c1(a+d?b+e) --> |=| d2(c?g)
-c1(a+d?b+e) --> |<| d3(a?b)
-c2(g?h) --> |>| d4(g?a)
-c2(g?h) --> |<| d5(g?a)
-c3(a+d?b+e) --> |>| d6(a?b)
-c3(a+d?b+e) --> |=| d7(c?g)
-c3(a+d?b+e) --> |<| d8(a?b)
-c4(i+k?j+l) --> |>| d9(i?a)
-c4(i+k?j+l) --> |<| d10(k?a)
-c5(i+k?j+l) --> |>| d11(k?a)
-c5(i+k?j+l) --> |<| d12(i?a)
-d1(a?b) --> |>| e1(a H)
-d1(a?b) --> |=| e2(e L)
-d2(c?g) --> |>| e3(c H)
-d2(c?g) --> |=| e4(f L)
-d3(a?b) --> |<| e5(b H)
-d3(a?b) --> |=| e6(d L)
-d4(g?a) --> |>| e0(g H)
-d4(g?a) --> |=| d01(h L)
-d5(g?a) --> |<| e02(g L)
-d5(g?a) --> |=| d03(h H)
-d6(a?b) --> |>| e7(b L)
-d6(a?b) --> |=| e8(d H)
-d7(c?g) --> |<| e9(c L)
-d7(c?g) --> |=| e10(f H)
-d8(a?b) --> |<| e11(a L)
-d8(a?b) --> |=| e12(e H)
-d9(i?a) --> |>| e13(i H)
-d9(i?a) --> |=| e14(l L)
-d10(k?a) --> |<| e15(k L)
-d10(k?a) --> |=| e16(j H)
-d11(k?a) --> |>| e17(k H)
-d11(k?a) --> |=| e18(j L)
-d12(i?a) --> |<| e19(i L)
-d12(i?a) --> |=| e20(l H)
-
-</div>
-<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-<script>mermaid.initialize({ startOnLoad: true, securityLevel: 'loose'});</script>
-
+<h3 id="go-test">go test<a hidden class="anchor" aria-hidden="true" href="#go-test">#</a></h3>
 
 
   </div>

@@ -5,12 +5,16 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="robots" content="index, follow">
-<title>book notes | Salieri&#39;s Blog</title>
+<title>Ch8 Linux共享库组织 | Salieri&#39;s Blog</title>
 <meta name="keywords" content="" />
-<meta name="description" content="">
+<meta name="description" content="Linux下的共享库其实就是ELF共享对象.
+1.兼容性
+2.版本名">
 <meta name="author" content="">
-<link rel="canonical" href="https://ognimalf.github.io/tags/book-notes/" />
+<link rel="canonical" href="https://ognimalf.github.io/archives/linker/ch8/" />
 <link crossorigin="anonymous" href="/assets/css/stylesheet.min.61dfb3f0b4cda95d2ccb867f9a3b244ce5d23e12492bcc3c277df594c7bc1adf.css" integrity="sha256-Yd&#43;z8LTNqV0sy4Z/mjskTOXSPhJJK8w8J331lMe8Gt8=" rel="preload stylesheet" as="style">
+<script defer crossorigin="anonymous" src="/assets/js/highlight.min.27cd435cc9ed6abb4b496581b151804f79f366c412620272bb94e2f5f598ebcc.js" integrity="sha256-J81DXMntartLSWWBsVGAT3nzZsQSYgJyu5Ti9fWY68w="
+    onload="hljs.initHighlightingOnLoad();"></script>
 <link rel="icon" href="https://ognimalf.github.io/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="https://ognimalf.github.io/favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="https://ognimalf.github.io/favicon-32x32.png">
@@ -19,7 +23,6 @@
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
 <meta name="generator" content="Hugo 0.68.3" />
-<link rel="alternate" type="application/rss+xml" href="https://ognimalf.github.io/tags/book-notes/index.xml">
 <noscript>
     <style>
         #theme-toggle,
@@ -56,18 +59,68 @@
         }
 
     </style>
-</noscript><meta property="og:title" content="book notes" />
-<meta property="og:description" content="" />
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://ognimalf.github.io/tags/book-notes/" />
+</noscript><meta property="og:title" content="Ch8 Linux共享库组织" />
+<meta property="og:description" content="Linux下的共享库其实就是ELF共享对象.
+1.兼容性
+2.版本名" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ognimalf.github.io/archives/linker/ch8/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-04-20T14:36:14&#43;09:00" />
+<meta property="article:modified_time" content="2022-04-20T14:36:14&#43;09:00" />
 
 <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="book notes"/>
-<meta name="twitter:description" content=""/>
+<meta name="twitter:title" content="Ch8 Linux共享库组织"/>
+<meta name="twitter:description" content="Linux下的共享库其实就是ELF共享对象.
+1.兼容性
+2.版本名"/>
 
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [, 
+    {
+      "@type": "ListItem",
+      "position":  3 ,
+      "name": "Ch8 Linux共享库组织",
+      "item": "https://ognimalf.github.io/archives/linker/ch8/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Ch8 Linux共享库组织",
+  "name": "Ch8 Linux共享库组织",
+  "description": "Linux下的共享库其实就是ELF共享对象.\n1.兼容性\n2.版本名",
+  "keywords": [
+    
+  ],
+  "articleBody": "Linux下的共享库其实就是ELF共享对象.\n1.兼容性\n2.版本名\n",
+  "wordCount" : "3",
+  "inLanguage": "en",
+  "datePublished": "2022-04-20T14:36:14+09:00",
+  "dateModified": "2022-04-20T14:36:14+09:00",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://ognimalf.github.io/archives/linker/ch8/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Salieri's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://ognimalf.github.io/favicon.ico"
+    }
+  }
+}
+</script>
 </head>
 
-<body class="list" id="top">
+<body class="" id="top">
 <script>
     if (localStorage.getItem("pref-theme") === "dark") {
         document.body.classList.add('dark');
@@ -120,21 +173,27 @@
         </ul>
     </nav>
 </header>
-<main class="main"> 
-<header class="page-header"><div class="breadcrumbs"><a href="https://ognimalf.github.io">Home</a></div>
-  <h1>book notes</h1>
-</header>
+<main class="main">
 
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2>第4章 数据编码与演化<sup><span class="entry-isdraft">&nbsp;&nbsp;[draft]</span></sup>
-    </h2>
-  </header>
-  <section class="entry-content">
-    <p>第4章知识精要</p>
-  </section>
-  <footer class="entry-footer"><span title='2021-11-07 23:16:02 +0900 KST'>November 7, 2021</span></footer>
-  <a class="entry-link" aria-label="post link to 第4章 数据编码与演化" href="https://ognimalf.github.io/archives/chapter4/"></a>
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="https://ognimalf.github.io">Home</a></div>
+    <h1 class="post-title">
+      Ch8 Linux共享库组织<sup><span class="entry-isdraft">&nbsp;&nbsp;[draft]</span></sup>
+    </h1>
+    <div class="post-meta"><span title='2022-04-20 14:36:14 +0900 KST'>April 20, 2022</span>
+
+</div>
+  </header> 
+  <div class="post-content"><p>Linux下的共享库其实就是ELF共享对象.</p>
+<p><strong>1.兼容性</strong></p>
+<p><strong>2.版本名</strong></p>
+
+
+  </div>
+
+  <footer class="post-footer">
+  </footer>
 </article>
     </main>
     
@@ -206,6 +265,53 @@
         }
     })
 
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerText = 'copy';
+
+        function copyingDone() {
+            copybutton.innerText = 'copied!';
+            setTimeout(() => {
+                copybutton.innerText = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
 </script>
 </body>
 
