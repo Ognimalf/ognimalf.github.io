@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Gradle Build基础 | Salieri&#39;s Blog</title>
+<meta name="keywords" content="软件构造, gradle" />
+<meta name="description" content="软件构造课程lab中使用gradle构建项目的问题解决以及gradle基本知识">
+<meta name="author" content="">
+<link rel="canonical" href="https://ognimalf.github.io/posts/gradle-build/" />
+<link crossorigin="anonymous" href="/assets/css/stylesheet.min.61dfb3f0b4cda95d2ccb867f9a3b244ce5d23e12492bcc3c277df594c7bc1adf.css" integrity="sha256-Yd&#43;z8LTNqV0sy4Z/mjskTOXSPhJJK8w8J331lMe8Gt8=" rel="preload stylesheet" as="style">
+<script defer crossorigin="anonymous" src="/assets/js/highlight.min.27cd435cc9ed6abb4b496581b151804f79f366c412620272bb94e2f5f598ebcc.js" integrity="sha256-J81DXMntartLSWWBsVGAT3nzZsQSYgJyu5Ti9fWY68w="
+    onload="hljs.initHighlightingOnLoad();"></script>
+<link rel="icon" href="https://ognimalf.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://ognimalf.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://ognimalf.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://ognimalf.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://ognimalf.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<meta name="generator" content="Hugo 0.68.3" />
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --hljs-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><meta property="og:title" content="Gradle Build基础" />
+<meta property="og:description" content="软件构造课程lab中使用gradle构建项目的问题解决以及gradle基本知识" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ognimalf.github.io/posts/gradle-build/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-05-09T08:57:52&#43;09:00" />
+<meta property="article:modified_time" content="2022-05-09T08:57:52&#43;09:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Gradle Build基础"/>
+<meta name="twitter:description" content="软件构造课程lab中使用gradle构建项目的问题解决以及gradle基本知识"/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [, 
+    {
+      "@type": "ListItem",
+      "position":  3 ,
+      "name": "Gradle Build基础",
+      "item": "https://ognimalf.github.io/posts/gradle-build/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Gradle Build基础",
+  "name": "Gradle Build基础",
+  "description": "软件构造课程lab中使用gradle构建项目的问题解决以及gradle基本知识",
+  "keywords": [
+    "软件构造", "gradle"
+  ],
+  "articleBody": "这学期新开的一门软件构造课程要求我们在提交lab代码时对项目进行构建.这个课程的lab使用java,因此我决定使用gradle对项目进行构建.\n所谓项目的构建,其实就是对项目代码进行编译,测试,部署等等一系列操作自动化的过程.gradle使用groovy语言编写构建脚本,具有比较高的自由度.但也恰恰是这个lab,让我在写脚本时遇见非常奇怪的需求导致的问题.\n在学习gradle时,我发现网络上的教程与我目前的需求有点脱节,我想知道脚本中很多东西的定义与作用,而各种教程都默认了解了这些,而重点介绍如何添加依赖,如何编写task等等,却不说明一个task,比如Test类型是如何执行的,而设置task时需要添加什么条件.\n我在这里先给出构建脚本的具体例子,放在文章最后的附录之中,从这里我们来看看gradle脚本的一些简单的知识以及这个项目构建的具体过程.\ngradle基础知识 由于这个课程对于项目构建的要求并没有特别多,只有最基本的编译与测试,因此在这里一些其他的功能留待日后使用到时再进行学习与补充.\n插件 首先我们看一下 apply plugin: 'java' ,这句话在脚本中添加了java插件.gradle本身对于构建自动化过程提供的功能很少,主要通过各种插件来实现构建项目的各种需求,比如添加新task,域对象(SourceSet)等等.\n我个人理解是gradle中插件的概念类似于其他编程语言中的库.\ngradle中插件分为 binary 插件与 script 插件.gradle中可以通过apply plugin与plugins: []两种方式引入插件,这两种方式具体作用有所不同,我们对此不深入讨论.script插件其实就是脚本文件,使用apply from 'xxx'可以引入脚本插件.\njava插件 依据gradle的文档,java插件对项目结构的假设如下:\n src/main/java: Production Java source. src/main/resources: Production resources, such as XML and properties files. src/test/java: Test Java source. src/test/resources: Test resources. src/sourceSet/java: Java source for the source set named sourceSet. src/sourceSet/resources: Resources for the source set named sourceSet.  task 脚本中引入的java插件,是构建java项目的核心插件,它为我们提供了很多的任务.gradle中常见的task类型如下:\n Copy: 将文件复制到目标目录,可以在复制时进行重命名等操作.我在前面的脚本中也指定了一个Copy任务. Sync: 与Copy类似,区别在于Sync复制文件后,目标目录中非复制文件都会被删除. Delete: 删除文件 JavaCompile: 编译java文件 Test: 选择SourceSet中的test文件进行测试  目前我们需要了解的一些task,更多的task在以后需要的时候介绍.\ngradle中的task可以指定依赖关系,指定一个任务在某个任务集合完成之后再执行,以下是task 添加依赖的示例.\ntask taskA { println 'taskA' } 1. task taskB(dependsOn: taskA) { println 'taskB' } 2. task taskB { println 'taskB' } taskB.dependsOn(taskA) 3. task taskB { dependsOn(taskA) println 'taskB' } 以上三种添加依赖的方式最后输出的结果都是\noutput: gradle -q taskB taskA taskB 通过添加依赖我们可以指定任务执行的顺序,这样更方便我们进行项目构建.\n下图是gradle官方文档给出的build task的依赖关系:\n同样,我们既可以指定一个任务作为某些任务的后置,我们也可以指定它们作为一些任务的前置,我们可以使用 finalizeBy 来指定这种依赖关系.\nSourceSet SourceSet 是gradle中抽象出来的项目结构,用官方文档的话,就是资源文件与源文件的逻辑结构.所有的task都对SourceSet内的文件进行处理(瞎扯的).通过配置SourceSet,我们可以在不改变项目实际目录结构的前提下对改造项目结构并进行构建.(就比如我在之后的问题中提到的一种解决方式,我将其他目录A配置为test目录,之后在项目文件中目录A便被分到gradle项目结构中的test部分之下).\njava插件为我们提供了 main 和 test 两个主要的目录,我们同样可以自己定义额外的路径结构.在文末的脚本中我们可以看到可以给 main 和 test 目录内指定java源文件的目录.对于 main ,gradle构建时就会编译其中的java源文件,而在测试阶段,gradle会自动执行 test 目录下所有的 test 文件.在这里我们列举SourceSet中一些常见的属性:\n name(r-o): source set的名称 output(r-o): source set的输出文件,包括编译后的Java类与资源 *output.calssesDirs(r-o): source set编译类的存放目录.默认值$buildDir/classes/java/$name comileClasspath: 编译时能使用的代码、类。当一个组件参与编译时，Gradle 就会将其放在 compileClasspath 中 runtimeClasspath: 运行时能使用的代码、类。当一个组件参与打包时，Gradle 就会将其放在 runtimeClasspath 中 java.srcDirs: 保存java源代码的目录.  dependencies 我们在dependencies中设置项目库依赖.主要如下有3种方式:\n 本地lib模块依赖 本地二进制库依赖 远程二进制库依赖  dependencies { // 本地lib模块依赖  implementation project(\":mylibrary\") // 本地二进制库依赖  implementation fileTree(dir: 'libs', include: ['*.jar']) // 远程二进制库依赖  implementation 'com.example.android:app-magic:12.3' // 完整写法  implementation group: 'com.example.android', name: 'app-magic', version: '12.3' } 我们课程中最多只需要使用本地二进制库依赖的形式，上面的语句告诉gradle在项目构建时在 lib 目录下所有的jar包中寻找需要的依赖.\ntest 测试是我们课程中项目构建的重要环节.对于测试所需要的依赖,我们可以在 dependencies 中简单的添加如下的代码即可.\ndependencies { testImplementation 'junit:junit:4.13' } 在测试中我们可以进行测试日志的配置,指定使用的测试套件等等.\n问题 接下来描述以下我在构建lab项目时遇到的奇葩问题和暴力解决方法.\n一个小问题:\n因为现在常用utf8编码，因此在构建的时候不要忘记修改编码格式，否则构建任务会报乱码的错误.\n我们这个lab主要分为3个部分,要求提交项目的目录结构如下:\n./ ├─lib │ ├─src │ ├─P1 │ │ │ ├─P2 │ │ │ │ │ │ │ │ └─MMM │ │ XXX.java │ │ XXXTest.java │ │ │ └─P3 │ YYY.java │ └─test └─P3 YYYTest.java 这里由于一些奇怪的原因,我们看到测试文件没有被一块放在test目录底下.而在build过程中需要对两个不同位置的文件进行测试.而gradle的脚本是以目录为基础进行一系列task的设置,并没有添加单个文件的操作.再加上gradle教程并不是那么适合我,所以一开始对于这个问题我感到有点棘手.\n我最开始想的解决方法是简单的在test目录添加src/P2/MMM,那么会将整个目录底下其他与测试无关的文件放在项目的test结构下.\ntest { java { srcDir 'test' srcDir 'src/P2/turtle' } } 丑陋且不理想的效果  那么我如果既不想src中的文件夹添加进test目录,又想把里面的测试文件在构建阶段执行测试,该怎么办呢?\n这里我后来想到了一个非常怪的办法:在测试开始时我先把src/P2/MMM的测试文件复制到test目录下,然后测试结束后删除源代码.这样就能够保证项目结构的完整性,而且在构建过程中执行了需要的测试.\n因此我添加了两个任务,一个拷贝测试源文件,另一个删除它.然后通过设置test任务依赖于拷贝任务,而在test任务结束后再执行删除任务,即可实现我的要求.\n以上就是我对于这个实验项目奇怪的构建要求的解决办法。实际上gradle还有很多很多的特性与方法，我希望这篇简单的介绍性博客之后读者能够在阅读官方文档时候不会感到迷糊，有了一些清晰的认识，再根据自己的需求写脚本。之后的实验构建任务应该都不是那么复杂，因此gradle脚本在原来的基础上修改修改应该就能用了.\n附 gradle脚本示例\napply plugin: 'java' // 修改编码格式避免构建时出现乱码问题 tasks.withType(JavaCompile) { options.encoding = \"UTF-8\" } sourceSets { // 指定src目录作为main结构的java源码目录, 之后的build  // 会编译main之中的java源文件  main { java { srcDir 'src' } } // 指定测试文件目录  test { java { srcDir 'test' } } } dependencies { implementation fileTree(dir:'lib',includes:['*jar']) } task p2(type: Copy) { from 'src/P2/turtle/TurtleSoupTest.java' into 'test' } task removeP2(type: Delete) { delete(file(\"test/TurtleSoupTest.java\")) } test { dependsOn(p2) testLogging { outputs.upToDateWhen {true} showStandardStreams = true } useJUnit() finalizedBy(removeP2) } // 编译测试文件时需要先执行p2将需要的测试文件复制到test目录下 compileTestJava.dependsOn(p2) ",
+  "wordCount" : "336",
+  "inLanguage": "en",
+  "datePublished": "2022-05-09T08:57:52+09:00",
+  "dateModified": "2022-05-09T08:57:52+09:00",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://ognimalf.github.io/posts/gradle-build/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Salieri's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://ognimalf.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://ognimalf.github.io" accesskey="h" title="Salieri&#39;s Blog (Alt + H)">Salieri&#39;s Blog</a>
+            <span class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </span>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://ognimalf.github.io/categories/" title="categories">
+                    <span>categories</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://ognimalf.github.io/tags/" title="tags">
+                    <span>tags</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="https://ognimalf.github.io">Home</a></div>
+    <h1 class="post-title">
+      Gradle Build基础
+    </h1>
+    <div class="post-meta"><span title='2022-05-09 08:57:52 +0900 KST'>May 9, 2022</span>
+
+</div>
+  </header> 
+  <div class="post-content"><p>这学期新开的一门软件构造课程要求我们在提交lab代码时对项目进行构建.这个课程的lab使用java,因此我决定使用gradle对项目进行构建.</p>
+<p>所谓项目的构建,其实就是对项目代码进行编译,测试,部署等等一系列操作自动化的过程.gradle使用groovy语言编写构建脚本,具有比较高的自由度.但也恰恰是这个lab,让我在写脚本时遇见非常奇怪的需求导致的问题.</p>
+<p>在学习gradle时,我发现网络上的教程与我目前的需求有点脱节,我想知道脚本中很多东西的定义与作用,而各种教程都默认了解了这些,而重点介绍如何添加依赖,如何编写task等等,却不说明一个task,比如Test类型是如何执行的,而设置task时需要添加什么条件.</p>
+<p>我在这里先给出构建脚本的具体例子,放在文章最后的附录之中,从这里我们来看看gradle脚本的一些简单的知识以及这个项目构建的具体过程.</p>
+<h3 id="gradle基础知识">gradle基础知识<a hidden class="anchor" aria-hidden="true" href="#gradle基础知识">#</a></h3>
+<p>由于这个课程对于项目构建的要求并没有特别多,只有最基本的编译与测试,因此在这里一些其他的功能留待日后使用到时再进行学习与补充.</p>
+<h4 id="插件">插件<a hidden class="anchor" aria-hidden="true" href="#插件">#</a></h4>
+<p>首先我们看一下 <code>apply plugin: 'java'</code> ,这句话在脚本中添加了java插件.gradle本身对于构建自动化过程提供的功能很少,主要通过各种插件来实现构建项目的各种需求,比如添加新task,域对象(SourceSet)等等.</p>
+<p>我个人理解是gradle中插件的概念类似于其他编程语言中的库.</p>
+<p>gradle中插件分为 binary 插件与 script 插件.gradle中可以通过<code>apply plugin</code>与<code>plugins: []</code>两种方式引入插件,这两种方式具体作用有所不同,我们对此不深入讨论.script插件其实就是脚本文件,使用<code>apply from 'xxx'</code>可以引入脚本插件.</p>
+<h5 id="java插件">java插件<a hidden class="anchor" aria-hidden="true" href="#java插件">#</a></h5>
+<p>依据gradle的文档,java插件对项目结构的假设如下:</p>
+<ul>
+<li>src/main/java: Production Java source.</li>
+<li>src/main/resources: Production resources, such as XML and properties files.</li>
+<li>src/test/java: Test Java source.</li>
+<li>src/test/resources: Test resources.</li>
+<li>src/sourceSet/java: Java source for the source set named sourceSet.</li>
+<li>src/sourceSet/resources: Resources for the source set named sourceSet.</li>
+</ul>
+<h4 id="task">task<a hidden class="anchor" aria-hidden="true" href="#task">#</a></h4>
+<p>脚本中引入的java插件,是构建java项目的核心插件,它为我们提供了很多的任务.gradle中常见的task类型如下:</p>
+<ul>
+<li>Copy: 将文件复制到目标目录,可以在复制时进行重命名等操作.我在前面的脚本中也指定了一个Copy任务.</li>
+<li>Sync: 与Copy类似,区别在于Sync复制文件后,目标目录中非复制文件都会被删除.</li>
+<li>Delete: 删除文件</li>
+<li>JavaCompile: 编译java文件</li>
+<li>Test: 选择SourceSet中的test文件进行测试</li>
+</ul>
+<p>目前我们需要了解的一些task,更多的task在以后需要的时候介绍.</p>
+<p>gradle中的task可以指定依赖关系,指定一个任务在某个任务集合完成之后再执行,以下是task 添加依赖的示例.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-groovy" data-lang="groovy">task taskA <span style="color:#f92672">{</span>
+    println <span style="color:#e6db74">&#39;taskA&#39;</span>
+<span style="color:#f92672">}</span>
+
+<span style="color:#ae81ff">1</span><span style="color:#f92672">.</span>
+task <span style="color:#a6e22e">taskB</span><span style="color:#f92672">(</span>dependsOn: taskA<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    println <span style="color:#e6db74">&#39;taskB&#39;</span>
+<span style="color:#f92672">}</span>
+
+<span style="color:#ae81ff">2</span><span style="color:#f92672">.</span>
+task taskB <span style="color:#f92672">{</span>
+    println <span style="color:#e6db74">&#39;taskB&#39;</span>
+<span style="color:#f92672">}</span>
+
+taskB<span style="color:#f92672">.</span><span style="color:#a6e22e">dependsOn</span><span style="color:#f92672">(</span>taskA<span style="color:#f92672">)</span>
+
+<span style="color:#ae81ff">3</span><span style="color:#f92672">.</span>
+task taskB <span style="color:#f92672">{</span>
+    dependsOn<span style="color:#f92672">(</span>taskA<span style="color:#f92672">)</span>
+    println <span style="color:#e6db74">&#39;taskB&#39;</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>以上三种添加依赖的方式最后输出的结果都是</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-groovy" data-lang="groovy">output:
+<span style="color:#f92672">&gt;</span>gradle <span style="color:#f92672">-</span>q taskB
+taskA
+taskB
+</code></pre></div><p>通过添加依赖我们可以指定任务执行的顺序,这样更方便我们进行项目构建.<br>
+下图是gradle官方文档给出的build task的依赖关系:</p>
+<p><img loading="lazy" src="../../images/javaPluginTasks.png" alt="build 的依赖关系"  />
+</p>
+<p>同样,我们既可以指定一个任务作为某些任务的后置,我们也可以指定它们作为一些任务的前置,我们可以使用 <code>finalizeBy</code> 来指定这种依赖关系.</p>
+<h4 id="sourceset">SourceSet<a hidden class="anchor" aria-hidden="true" href="#sourceset">#</a></h4>
+<p>SourceSet 是gradle中抽象出来的项目结构,用官方文档的话,就是资源文件与源文件的逻辑结构.所有的task都对SourceSet内的文件进行处理(瞎扯的).通过配置SourceSet,我们可以在不改变项目实际目录结构的前提下对改造项目结构并进行构建.(就比如我在之后的问题中提到的一种解决方式,我将其他目录A配置为test目录,之后在项目文件中目录A便被分到gradle项目结构中的test部分之下).</p>
+<p>java插件为我们提供了 <code>main</code> 和 <code>test</code> 两个主要的目录,我们同样可以自己定义额外的路径结构.在文末的脚本中我们可以看到可以给 <code>main</code> 和 <code>test</code> 目录内指定java源文件的目录.对于 <code>main</code> ,gradle构建时就会编译其中的java源文件,而在测试阶段,gradle会自动执行 <code>test</code> 目录下所有的 test 文件.在这里我们列举SourceSet中一些常见的属性:</p>
+<ul>
+<li>name(r-o): source set的名称</li>
+<li>output(r-o): source set的输出文件,包括编译后的Java类与资源</li>
+<li>*output.calssesDirs(r-o): source set编译类的存放目录.默认值<code>$buildDir/classes/java/$name</code></li>
+<li>comileClasspath: 编译时能使用的代码、类。当一个组件参与编译时，Gradle 就会将其放在 compileClasspath 中</li>
+<li>runtimeClasspath: 运行时能使用的代码、类。当一个组件参与打包时，Gradle 就会将其放在 runtimeClasspath 中</li>
+<li>java.srcDirs: 保存java源代码的目录.</li>
+</ul>
+<h4 id="dependencies">dependencies<a hidden class="anchor" aria-hidden="true" href="#dependencies">#</a></h4>
+<p>我们在dependencies中设置项目库依赖.主要如下有3种方式:</p>
+<ol>
+<li>本地lib模块依赖</li>
+<li>本地二进制库依赖</li>
+<li>远程二进制库依赖</li>
+</ol>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-groovy" data-lang="groovy">dependencies <span style="color:#f92672">{</span>
+    <span style="color:#75715e">// 本地lib模块依赖
+</span><span style="color:#75715e"></span>    implementation <span style="color:#a6e22e">project</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;:mylibrary&#34;</span><span style="color:#f92672">)</span>
+
+    <span style="color:#75715e">// 本地二进制库依赖
+</span><span style="color:#75715e"></span>    implementation <span style="color:#a6e22e">fileTree</span><span style="color:#f92672">(</span>dir: <span style="color:#e6db74">&#39;libs&#39;</span><span style="color:#f92672">,</span> include: <span style="color:#f92672">[</span><span style="color:#e6db74">&#39;*.jar&#39;</span><span style="color:#f92672">])</span>
+
+    <span style="color:#75715e">// 远程二进制库依赖
+</span><span style="color:#75715e"></span>    implementation <span style="color:#e6db74">&#39;com.example.android:app-magic:12.3&#39;</span>
+    <span style="color:#75715e">// 完整写法
+</span><span style="color:#75715e"></span>    implementation group: <span style="color:#e6db74">&#39;com.example.android&#39;</span><span style="color:#f92672">,</span> name: <span style="color:#e6db74">&#39;app-magic&#39;</span><span style="color:#f92672">,</span> version: <span style="color:#e6db74">&#39;12.3&#39;</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>我们课程中最多只需要使用本地二进制库依赖的形式，上面的语句告诉gradle在项目构建时在 <code>lib</code> 目录下所有的jar包中寻找需要的依赖.</p>
+<h4 id="test">test<a hidden class="anchor" aria-hidden="true" href="#test">#</a></h4>
+<p>测试是我们课程中项目构建的重要环节.对于测试所需要的依赖,我们可以在 dependencies 中简单的添加如下的代码即可.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-groovy" data-lang="groovy">dependencies <span style="color:#f92672">{</span>
+    testImplementation <span style="color:#e6db74">&#39;junit:junit:4.13&#39;</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>在测试中我们可以进行测试日志的配置,指定使用的测试套件等等.</p>
+<h3 id="问题">问题<a hidden class="anchor" aria-hidden="true" href="#问题">#</a></h3>
+<p>接下来描述以下我在构建lab项目时遇到的奇葩问题和暴力解决方法.</p>
+<p>一个小问题:<br>
+因为现在常用utf8编码，因此在构建的时候不要忘记修改编码格式，否则构建任务会报乱码的错误.</p>
+<p>我们这个lab主要分为3个部分,要求提交项目的目录结构如下:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cmd" data-lang="cmd">./
+├─lib
+│                  
+├─src
+│  ├─P1
+│  │        
+│  ├─P2
+│  │  │  
+│  │  │      
+│  │  └─MMM
+│  │        XXX.java
+│  │        XXXTest.java
+│  │          
+│  └─P3
+│       YYY.java
+│          
+└─test
+    └─P3
+        YYYTest.java
+</code></pre></div><p>这里由于一些奇怪的原因,我们看到测试文件没有被一块放在test目录底下.而在build过程中需要对两个不同位置的文件进行测试.而gradle的脚本是以目录为基础进行一系列task的设置,并没有添加单个文件的操作.再加上gradle教程并不是那么适合我,所以一开始对于这个问题我感到有点棘手.</p>
+<p>我最开始想的解决方法是简单的在test目录添加src/P2/MMM,那么会将整个目录底下其他与测试无关的文件放在项目的test结构下.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-groovy" data-lang="groovy">test <span style="color:#f92672">{</span>
+    java <span style="color:#f92672">{</span>
+        srcDir <span style="color:#e6db74">&#39;test&#39;</span>
+        srcDir <span style="color:#e6db74">&#39;src/P2/turtle&#39;</span>
+    <span style="color:#f92672">}</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><div align="center">
+    <img src="../../images/ugly.png" width="50%" height="50%"/>
+    <center><font size=2>丑陋且不理想的效果</font></center>
+</div>
+<p>那么我如果既不想src中的文件夹添加进test目录,又想把里面的测试文件在构建阶段执行测试,该怎么办呢?</p>
+<p>这里我后来想到了一个非常怪的办法:在测试开始时我先把<code>src/P2/MMM</code>的测试文件复制到<code>test</code>目录下,然后测试结束后删除源代码.这样就能够保证项目结构的完整性,而且在构建过程中执行了需要的测试.</p>
+<p>因此我添加了两个任务,一个拷贝测试源文件,另一个删除它.然后通过设置test任务依赖于拷贝任务,而在test任务结束后再执行删除任务,即可实现我的要求.</p>
+<p>以上就是我对于这个实验项目奇怪的构建要求的解决办法。实际上gradle还有很多很多的特性与方法，我希望这篇简单的介绍性博客之后读者能够在阅读官方文档时候不会感到迷糊，有了一些清晰的认识，再根据自己的需求写脚本。之后的实验构建任务应该都不是那么复杂，因此gradle脚本在原来的基础上修改修改应该就能用了.</p>
+<h3 id="附">附<a hidden class="anchor" aria-hidden="true" href="#附">#</a></h3>
+<p>gradle脚本示例</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-groovy" data-lang="groovy">apply plugin: <span style="color:#e6db74">&#39;java&#39;</span>
+
+<span style="color:#75715e">// 修改编码格式避免构建时出现乱码问题
+</span><span style="color:#75715e"></span>tasks<span style="color:#f92672">.</span><span style="color:#a6e22e">withType</span><span style="color:#f92672">(</span>JavaCompile<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    options<span style="color:#f92672">.</span><span style="color:#a6e22e">encoding</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;UTF-8&#34;</span>
+<span style="color:#f92672">}</span>
+
+sourceSets <span style="color:#f92672">{</span>
+    <span style="color:#75715e">// 指定src目录作为main结构的java源码目录, 之后的build
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// 会编译main之中的java源文件
+</span><span style="color:#75715e"></span>    main <span style="color:#f92672">{</span>
+        java <span style="color:#f92672">{</span>
+            srcDir <span style="color:#e6db74">&#39;src&#39;</span>
+        <span style="color:#f92672">}</span>
+    <span style="color:#f92672">}</span>
+
+    <span style="color:#75715e">// 指定测试文件目录
+</span><span style="color:#75715e"></span>    test <span style="color:#f92672">{</span>
+        java <span style="color:#f92672">{</span>
+            srcDir <span style="color:#e6db74">&#39;test&#39;</span>
+        <span style="color:#f92672">}</span>
+    <span style="color:#f92672">}</span>
+<span style="color:#f92672">}</span>
+
+dependencies <span style="color:#f92672">{</span>
+    implementation <span style="color:#a6e22e">fileTree</span><span style="color:#f92672">(</span>dir:<span style="color:#e6db74">&#39;lib&#39;</span><span style="color:#f92672">,</span>includes:<span style="color:#f92672">[</span><span style="color:#e6db74">&#39;*jar&#39;</span><span style="color:#f92672">])</span>
+<span style="color:#f92672">}</span>
+
+task <span style="color:#a6e22e">p2</span><span style="color:#f92672">(</span>type: Copy<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    from <span style="color:#e6db74">&#39;src/P2/turtle/TurtleSoupTest.java&#39;</span>
+    into <span style="color:#e6db74">&#39;test&#39;</span>
+<span style="color:#f92672">}</span>
+
+task <span style="color:#a6e22e">removeP2</span><span style="color:#f92672">(</span>type: Delete<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    delete<span style="color:#f92672">(</span>file<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;test/TurtleSoupTest.java&#34;</span><span style="color:#f92672">))</span>
+<span style="color:#f92672">}</span>
+
+test <span style="color:#f92672">{</span>
+    dependsOn<span style="color:#f92672">(</span>p2<span style="color:#f92672">)</span>
+
+    testLogging <span style="color:#f92672">{</span>
+        outputs<span style="color:#f92672">.</span><span style="color:#a6e22e">upToDateWhen</span> <span style="color:#f92672">{</span><span style="color:#66d9ef">true</span><span style="color:#f92672">}</span>
+        showStandardStreams <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>
+    <span style="color:#f92672">}</span>
+    useJUnit<span style="color:#f92672">()</span>
+
+    finalizedBy<span style="color:#f92672">(</span>removeP2<span style="color:#f92672">)</span>
+<span style="color:#f92672">}</span>
+
+<span style="color:#75715e">// 编译测试文件时需要先执行p2将需要的测试文件复制到test目录下
+</span><span style="color:#75715e"></span>compileTestJava<span style="color:#f92672">.</span><span style="color:#a6e22e">dependsOn</span><span style="color:#f92672">(</span>p2<span style="color:#f92672">)</span>
+</code></pre></div>
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://ognimalf.github.io/tags/%E8%BD%AF%E4%BB%B6%E6%9E%84%E9%80%A0/">软件构造</a></li>
+      <li><a href="https://ognimalf.github.io/tags/gradle/">gradle</a></li>
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<script src="https://cdn.bootcss.com/mermaid/8.0.0-rc.8/mermaid.min.js"></script>
+<footer class="footer">
+    <span>&copy; 2022 <a href="https://ognimalf.github.io">Salieri&#39;s Blog</a></span>
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://git.io/hugopapermod" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerText = 'copy';
+
+        function copyingDone() {
+            copybutton.innerText = 'copied!';
+            setTimeout(() => {
+                copybutton.innerText = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

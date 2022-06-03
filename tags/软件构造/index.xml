@@ -9,28 +9,28 @@
     <lastBuildDate>Fri, 03 Jun 2022 07:43:06 +0900</lastBuildDate><atom:link href="https://ognimalf.github.io/tags/%E8%BD%AF%E4%BB%B6%E6%9E%84%E9%80%A0/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>java泛型梳理</title>
-      <link>https://ognimalf.github.io/archives/software-structure/</link>
+      <link>https://ognimalf.github.io/posts/generics/</link>
       <pubDate>Fri, 03 Jun 2022 07:43:06 +0900</pubDate>
       
-      <guid>https://ognimalf.github.io/archives/software-structure/</guid>
+      <guid>https://ognimalf.github.io/posts/generics/</guid>
       <description>java泛型的知识点梳理</description>
     </item>
     
     <item>
       <title>Git Basic</title>
-      <link>https://ognimalf.github.io/archives/git_basic/</link>
+      <link>https://ognimalf.github.io/posts/git-basic/</link>
       <pubDate>Fri, 20 May 2022 09:01:41 -0700</pubDate>
       
-      <guid>https://ognimalf.github.io/archives/git_basic/</guid>
+      <guid>https://ognimalf.github.io/posts/git-basic/</guid>
       <description>git 的一些基本操作</description>
     </item>
     
     <item>
       <title>Gradle Build基础</title>
-      <link>https://ognimalf.github.io/archives/software-structure/</link>
+      <link>https://ognimalf.github.io/posts/gradle-build/</link>
       <pubDate>Mon, 09 May 2022 08:57:52 +0900</pubDate>
       
-      <guid>https://ognimalf.github.io/archives/software-structure/</guid>
+      <guid>https://ognimalf.github.io/posts/gradle-build/</guid>
       <description>软件构造课程lab中使用gradle构建项目的问题解决以及gradle基本知识</description>
     </item>
     
