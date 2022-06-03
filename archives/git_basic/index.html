@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="robots" content="index, follow">
 <title>Git Basic | Salieri&#39;s Blog</title>
-<meta name="keywords" content="git" />
+<meta name="keywords" content="git, 软件构造" />
 <meta name="description" content="git 的一些基本操作">
 <meta name="author" content="">
 <link rel="canonical" href="https://ognimalf.github.io/archives/git_basic/" />
@@ -61,8 +61,8 @@
 <meta property="og:description" content="git 的一些基本操作" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://ognimalf.github.io/archives/git_basic/" /><meta property="article:section" content="posts" />
-<meta property="article:published_time" content="2021-10-30T09:01:41-07:00" />
-<meta property="article:modified_time" content="2021-10-30T00:00:00&#43;00:00" />
+<meta property="article:published_time" content="2022-05-20T09:01:41-07:00" />
+<meta property="article:modified_time" content="2022-05-20T00:00:00&#43;00:00" />
 
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Git Basic"/>
@@ -91,13 +91,13 @@
   "name": "Git Basic",
   "description": "git 的一些基本操作",
   "keywords": [
-    "git"
+    "git", "软件构造"
   ],
-  "articleBody": "git分支 git branch: 用来创建分支.\ngit branch -f  : 将分支n1强制移动到n2提交处.\n^: 指向当前提交父节点,在^加数字可以选择返回的父节点.\n~(num): 指向当前提交父节点路径,num表示回退提交数目\nPS:符号^与~可以结合在一块实现更高效的回退父提交\ngit rebase : 将当前的分支提交复制到指定分支上.\ngit rebase  : 将分支n移动到分支m上\n例如:\nbefore: c1 /\\ / \\ c2 c4 | | | | c3 c5 | | c6*(HEAD) git rebase c2 []表示提交消失 c1 ____/ \\____ | | c2 [c4] / \\ | / \\ | c3 c4 [c5] | | | | c5 [c6]*(HEAD) | | c6*(HEAD) git撤销提交 git reset用于撤销本地提交.\ngit revert用于远程分支.该命令产生一个新的提交,用来撤销之前的提交.revert之后就能将更改推送到远程仓库.\ngit整理提交记录 git cherry-pick  ...: 将一些提交复制到当前分支下.\ngit rebase -i : 交互式rebase,能够打开交互页面,包含当前提交b之后的内容,手动进行修改.\ngit Tag git的tag可以被永久固定在一个commit上.不会随提交移动而改变.使用者也不能切换到某个标签上进行修改.\ngit tag  : 为提交commit设置标签名,默认为HEAD所在提交设立标签.\ngit describe \n 可以是任何能被 Git 识别成提交记录的引用，如果你没有指定的话，Git 会以你目前所检出的位置(HEAD).\n它输出的结果是这样的：\n__g\ntag 表示的是离 ref 最近的标签， numCommits 是表示这个 ref 与 tag 相差有多少个提交记录， hash 表示的是你所给定的 ref 所表示的提交记录哈希值的前几位。\n当 ref 提交记录上有某个标签时，则只输出标签名称.\ngit远程分支 git远程分支的命名规范如下:\n /  remote name就是远程仓库的名称.\norigin作为远程仓库的默认名字.\ngit clone:在本地创建一个远程仓库的拷贝,对应的远程仓库名字默认为origin\ngit fetch: 作为本地与远程仓库的通信方式.这条命令将本地仓库中的远程分支更新成远程仓库对应分支的最新状态,但是并没有修改本地的文件,可以被看作单纯的下载操作.\ngit pull: 效果等同于git fetch + git merge.\ngit push: 负责将本地的变更上传到指定的远程仓库,并在远程仓库上合并新的提交记录,同时本地的远程分支也将被更新.注意,git push不带参数时行为与push.default的配置有关.\n远程提交时,需要先保持本地分支与远程分支的一致性.可以使用\n git rebase git merge : 结合分支b与当前的HEAD提交作为父节点,生成新的提交 git pull --rebase:将本地工作rebase到远程分支的最新提交记录  等命令实现目的.\n注意:本地合并远程分支时,不要忘记使用git fetch从远端复制记录到本地分支\nrebase与merge的比较 rebase的优点:\nRebase 使你的提交树变得很干净, 所有的提交都在一条线上\nrebase的缺点:\nRebase 修改了提交树的历史\n远程跟踪 设置本地跟踪分支:\n git checkout -b  :设置本地分支local跟踪远程分支remote,这意味着可以在local上使用git push,工作将被推送到remote分支上. git branch -u  :效果同上,local参数不给出时默认为当前所在分支.  注意:branch -u指定的local分支需要首先存在,不会创建分支.checkout -b会创建不存在的本地跟踪分支并自动指向它.\n参数 push git push  : place指定远程仓库remote需要查找的分支,push首先切换到本地的place指向的分支,获取所有的提交,然后在远程仓库(remote)中找到对应的分支,添加远程分支中没有的提交.\n同样,这里的参数可以被替换为:,因此命令变成了如下形式:\ngit push origin :\n这里的参数意思是将本地source分支与destination远程分支绑定,确定在本地和远程需要定位的分支.配合之前分支的^与~定位符,push命令可以被更灵活的执行.如果destination分支不存在则会被创建.\nfetch git fetch也有类似于push的参数,只是fetch的源位置在远程仓库,目标位置在本地分支,同样不存在的目标分支将会被建立.\n需要注意的是,fetch只是作为下载记录的命令,因此将远程的提交放在本地的远程分支中.\nfetch命令不提供参数的形式会将所有的提交下载至本地.\n不指定source 对于push命令,不指定source时,会将远程仓库中的destination分支删除;而对于fetch指令,则会创建一个destination的本地分支.\npull pull命令本质上作为fetch与merge的组合技能.例如:\ngit pull origin foo = git fetch origin foo; git merge o/foo git pull origin bar~1:bugFix = git fetch origin bar~1:bugFix; git merge bugFix\n git指令速查 作为初学者,在这里列举一些常用的git命令,以便随时查阅\n git init 初始化当前文件夹,创建本地仓库 git config user.name , git config user.email 查看git账号的用户名与email地址 git config --global user.name xxxxx , git config --global user.email xxxxx@xx.xxx 修改git账号的用户名与email git clone https/ssh 从github上克隆仓库 git add 可以将文件添加到暂存区, git add . 将所有文件添加到暂存区, 添加后可以用git status -s 查看文件 git rm --cache FILE 删除暂存区文件 git commit 提交最新的代码, 可用选项 -a 能够提交修改过的文件并提交 git log 可以查看commit的历史 git rebase 在commit之后,最新的提交并不与远程的分支相同,此时需要合并commit git pull 在git commit之后如果直接push操作可能导致失败,因为本地仓库落后于远程仓库,因此我们需要先将远程的分支抓取过来 git push 将本地分支上传到远程并合并 git push origin master 将本地分支上传到origin主机的master分 gitHub: git config --global http.sslVerify \"false\" 在push时应对OpenSSL SSL_read: Connection was reset, errno 10054的一种方法  ",
-  "wordCount" : "310",
+  "articleBody": "git分支 git branch: 用来创建分支.\ngit branch -f  : 将分支n1强制移动到n2提交处.\n^: 指向当前提交父节点,在^加数字可以选择返回的父节点.\n~(num): 指向当前提交父节点路径,num表示回退提交数目\nPS:符号^与~可以结合在一块实现更高效的回退父提交\ngit rebase : 将当前的分支提交复制到指定分支上.\ngit rebase  : 将分支n移动到分支m上\n例如:\nbefore: c1 /\\ / \\ c2 c4 | | | | c3 c5 | | c6*(HEAD) git rebase c2 []表示提交消失 c1 ____/ \\____ | | c2 [c4] / \\ | / \\ | c3 c4 [c5] | | | | c5 [c6]*(HEAD) | | c6*(HEAD) git撤销提交 git reset用于撤销本地提交.\ngit revert用于远程分支.该命令产生一个新的提交,用来撤销之前的提交.revert之后就能将更改推送到远程仓库.\ngit整理提交记录 git cherry-pick  ...: 将一些提交复制到当前分支下.\ngit rebase -i : 交互式rebase,能够打开交互页面,包含当前提交b之后的内容,手动进行修改.\ngit Tag git的tag可以被永久固定在一个commit上.不会随提交移动而改变.使用者也不能切换到某个标签上进行修改.\ngit tag  : 为提交commit设置标签名,默认为HEAD所在提交设立标签.\ngit describe \n 可以是任何能被 Git 识别成提交记录的引用，如果你没有指定的话，Git 会以你目前所检出的位置(HEAD).\n它输出的结果是这样的：\n__g\ntag 表示的是离 ref 最近的标签， numCommits 是表示这个 ref 与 tag 相差有多少个提交记录， hash 表示的是你所给定的 ref 所表示的提交记录哈希值的前几位。\n当 ref 提交记录上有某个标签时，则只输出标签名称.\ngit远程分支 git远程分支的命名规范如下:\n /  remote name就是远程仓库的名称.\norigin作为远程仓库的默认名字.\ngit clone:在本地创建一个远程仓库的拷贝,对应的远程仓库名字默认为origin\ngit fetch: 作为本地与远程仓库的通信方式.这条命令将本地仓库中的远程分支更新成远程仓库对应分支的最新状态,但是并没有修改本地的文件,可以被看作单纯的下载操作.\ngit pull: 效果等同于git fetch + git merge.\ngit push: 负责将本地的变更上传到指定的远程仓库,并在远程仓库上合并新的提交记录,同时本地的远程分支也将被更新.注意,git push不带参数时行为与push.default的配置有关.\n远程提交时,需要先保持本地分支与远程分支的一致性.可以使用\n git rebase git merge : 结合分支b与当前的HEAD提交作为父节点,生成新的提交 git pull --rebase:将本地工作rebase到远程分支的最新提交记录  等命令实现目的.\n注意:本地合并远程分支时,不要忘记使用git fetch从远端复制记录到本地分支\nrebase与merge的比较 rebase的优点:\nRebase 使你的提交树变得很干净, 所有的提交都在一条线上\nrebase的缺点:\nRebase 修改了提交树的历史\n远程跟踪 设置本地跟踪分支:\n git checkout -b  :设置本地分支local跟踪远程分支remote,这意味着可以在local上使用git push,工作将被推送到remote分支上. git branch -u  :效果同上,local参数不给出时默认为当前所在分支.  注意:branch -u指定的local分支需要首先存在,不会创建分支.checkout -b会创建不存在的本地跟踪分支并自动指向它.\n参数 push git push  : place指定远程仓库remote需要查找的分支,push首先切换到本地的place指向的分支,获取所有的提交,然后在远程仓库(remote)中找到对应的分支,添加远程分支中没有的提交.\n同样,这里的参数可以被替换为:,因此命令变成了如下形式:\ngit push origin :\n这里的参数意思是将本地source分支与destination远程分支绑定,确定在本地和远程需要定位的分支.配合之前分支的^与~定位符,push命令可以被更灵活的执行.如果destination分支不存在则会被创建.\nfetch git fetch也有类似于push的参数,只是fetch的源位置在远程仓库,目标位置在本地分支,同样不存在的目标分支将会被建立.\n需要注意的是,fetch只是作为下载记录的命令,因此将远程的提交放在本地的远程分支中.\nfetch命令不提供参数的形式会将所有的提交下载至本地.\n不指定source 对于push命令,不指定source时,会将远程仓库中的destination分支删除;而对于fetch指令,则会创建一个destination的本地分支.\npull pull命令本质上作为fetch与merge的组合技能.例如:\ngit pull origin foo = git fetch origin foo; git merge o/foo git pull origin bar~1:bugFix = git fetch origin bar~1:bugFix; git merge bugFix\n git指令速查  git init 初始化当前文件夹,创建本地仓库 git config user.name , git config user.email 查看git账号的用户名与email地址 git config --global user.name xxxxx , git config --global user.email xxxxx@xx.xxx 修改git账号的用户名与email git clone https/ssh 从github上克隆仓库 git add 可以将文件添加到暂存区, git add . 将所有文件添加到暂存区, 添加后可以用git status -s 查看文件 git rm --cache FILE 删除暂存区文件 git commit 提交最新的代码, 可用选项 -a 能够提交修改过的文件并提交 git log 可以查看commit的历史 git rebase 在commit之后,最新的提交并不与远程的分支相同,此时需要合并commit git pull 在git commit之后如果直接push操作可能导致失败,因为本地仓库落后于远程仓库,因此我们需要先将远程的分支抓取过来 git push 将本地分支上传到远程并合并 git push origin master 将本地分支上传到origin主机的master分 gitHub: git config --global http.sslVerify \"false\" 在push时应对OpenSSL SSL_read: Connection was reset, errno 10054的一种方法  ",
+  "wordCount" : "309",
   "inLanguage": "en",
-  "datePublished": "2021-10-30T09:01:41-07:00",
-  "dateModified": "2021-10-30T00:00:00Z",
+  "datePublished": "2022-05-20T09:01:41-07:00",
+  "dateModified": "2022-05-20T00:00:00Z",
   "mainEntityOfPage": {
     "@type": "WebPage",
     "@id": "https://ognimalf.github.io/archives/git_basic/"
@@ -175,7 +175,7 @@
     <h1 class="post-title">
       Git Basic
     </h1>
-    <div class="post-meta"><span title='2021-10-30 09:01:41 -0700 -0700'>October 30, 2021</span>
+    <div class="post-meta"><span title='2022-05-20 09:01:41 -0700 -0700'>May 20, 2022</span>
 
 </div>
   </header> 
@@ -279,7 +279,6 @@ Rebase 修改了提交树的历史</p>
 <code>git pull origin bar~1:bugFix = git fetch origin bar~1:bugFix; git merge bugFix</code></p>
 <hr>
 <h3 id="git指令速查">git指令速查<a hidden class="anchor" aria-hidden="true" href="#git指令速查">#</a></h3>
-<p>作为初学者,在这里列举一些常用的git命令,以便随时查阅</p>
 <ol>
 <li><code>git init</code> 初始化当前文件夹,创建本地仓库</li>
 <li><code>git config user.name</code> , <code>git config user.email</code> 查看git账号的用户名与email地址</li>
@@ -302,6 +301,7 @@ Rebase 修改了提交树的历史</p>
   <footer class="post-footer">
     <ul class="post-tags">
       <li><a href="https://ognimalf.github.io/tags/git/">git</a></li>
+      <li><a href="https://ognimalf.github.io/tags/%E8%BD%AF%E4%BB%B6%E6%9E%84%E9%80%A0/">软件构造</a></li>
     </ul>
   </footer>
 </article>
