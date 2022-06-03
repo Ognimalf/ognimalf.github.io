@@ -6,22 +6,31 @@
     <description>Recent content in Tags on Salieri&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 20 May 2022 09:01:41 -0700</lastBuildDate><atom:link href="https://ognimalf.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 03 Jun 2022 07:43:06 +0900</lastBuildDate><atom:link href="https://ognimalf.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>git</title>
-      <link>https://ognimalf.github.io/tags/git/</link>
-      <pubDate>Fri, 20 May 2022 09:01:41 -0700</pubDate>
+      <title>java</title>
+      <link>https://ognimalf.github.io/tags/java/</link>
+      <pubDate>Fri, 03 Jun 2022 07:43:06 +0900</pubDate>
       
-      <guid>https://ognimalf.github.io/tags/git/</guid>
+      <guid>https://ognimalf.github.io/tags/java/</guid>
       <description></description>
     </item>
     
     <item>
       <title>软件构造</title>
       <link>https://ognimalf.github.io/tags/%E8%BD%AF%E4%BB%B6%E6%9E%84%E9%80%A0/</link>
-      <pubDate>Fri, 20 May 2022 09:01:41 -0700</pubDate>
+      <pubDate>Fri, 03 Jun 2022 07:43:06 +0900</pubDate>
       
       <guid>https://ognimalf.github.io/tags/%E8%BD%AF%E4%BB%B6%E6%9E%84%E9%80%A0/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>git</title>
+      <link>https://ognimalf.github.io/tags/git/</link>
+      <pubDate>Fri, 20 May 2022 09:01:41 -0700</pubDate>
+      
+      <guid>https://ognimalf.github.io/tags/git/</guid>
       <description></description>
     </item>
     
