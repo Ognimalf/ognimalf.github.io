@@ -17,6 +17,15 @@
     </item>
     
     <item>
+      <title>Git Basic</title>
+      <link>https://ognimalf.github.io/posts/git-basic/</link>
+      <pubDate>Fri, 20 May 2022 09:01:41 -0700</pubDate>
+      
+      <guid>https://ognimalf.github.io/posts/git-basic/</guid>
+      <description>git 的一些基本操作</description>
+    </item>
+    
+    <item>
       <title>Gradle Build基础</title>
       <link>https://ognimalf.github.io/posts/gradle-build/</link>
       <pubDate>Mon, 09 May 2022 08:57:52 +0900</pubDate>
