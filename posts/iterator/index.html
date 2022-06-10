@@ -5,9 +5,9 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="robots" content="index, follow">
-<title>Iterator | Salieri&#39;s Blog</title>
+<title>java容器与迭代器简析 | Salieri&#39;s Blog</title>
 <meta name="keywords" content="软件构造, java" />
-<meta name="description" content="java中collection类型迭代器源码阅读,以及collection类型可变与不可变类型包装器分析">
+<meta name="description" content="java中collection类型源码阅读,以及collection类型可变与不可变类型包装器分析">
 <meta name="author" content="">
 <link rel="canonical" href="https://ognimalf.github.io/posts/iterator/" />
 <link crossorigin="anonymous" href="/assets/css/stylesheet.min.61dfb3f0b4cda95d2ccb867f9a3b244ce5d23e12492bcc3c277df594c7bc1adf.css" integrity="sha256-Yd&#43;z8LTNqV0sy4Z/mjskTOXSPhJJK8w8J331lMe8Gt8=" rel="preload stylesheet" as="style">
@@ -57,16 +57,16 @@
         }
 
     </style>
-</noscript><meta property="og:title" content="Iterator" />
-<meta property="og:description" content="java中collection类型迭代器源码阅读,以及collection类型可变与不可变类型包装器分析" />
+</noscript><meta property="og:title" content="java容器与迭代器简析" />
+<meta property="og:description" content="java中collection类型源码阅读,以及collection类型可变与不可变类型包装器分析" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://ognimalf.github.io/posts/iterator/" /><meta property="article:section" content="posts" />
 <meta property="article:published_time" content="2022-06-06T09:17:20&#43;09:00" />
 <meta property="article:modified_time" content="2022-06-06T09:17:20&#43;09:00" />
 
 <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="Iterator"/>
-<meta name="twitter:description" content="java中collection类型迭代器源码阅读,以及collection类型可变与不可变类型包装器分析"/>
+<meta name="twitter:title" content="java容器与迭代器简析"/>
+<meta name="twitter:description" content="java中collection类型源码阅读,以及collection类型可变与不可变类型包装器分析"/>
 
 
 <script type="application/ld+json">
@@ -77,7 +77,7 @@
     {
       "@type": "ListItem",
       "position":  3 ,
-      "name": "Iterator",
+      "name": "java容器与迭代器简析",
       "item": "https://ognimalf.github.io/posts/iterator/"
     }
   ]
@@ -87,9 +87,9 @@
 {
   "@context": "https://schema.org",
   "@type": "BlogPosting",
-  "headline": "Iterator",
-  "name": "Iterator",
-  "description": "java中collection类型迭代器源码阅读,以及collection类型可变与不可变类型包装器分析",
+  "headline": "java容器与迭代器简析",
+  "name": "java容器与迭代器简析",
+  "description": "java中collection类型源码阅读,以及collection类型可变与不可变类型包装器分析",
   "keywords": [
     "软件构造", "java"
   ],
@@ -173,12 +173,60 @@
   <header class="post-header">
     <div class="breadcrumbs"><a href="https://ognimalf.github.io">Home</a></div>
     <h1 class="post-title">
-      Iterator
+      java容器与迭代器简析
     </h1>
     <div class="post-meta"><span title='2022-06-06 09:17:20 +0900 KST'>June 6, 2022</span>
 
 </div>
-  </header> 
+  </header> <div class="toc">
+    <details  open>
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><ul>
+                <li>
+                    <a href="#0-%e6%95%b4%e4%bd%93%e5%ae%89%e6%8e%92" aria-label="0. 整体安排">0. 整体安排</a></li>
+                <li>
+                    <a href="#1-collection" aria-label="1. Collection">1. Collection</a><ul>
+                        
+                <li>
+                    <a href="#11-collectionjava" aria-label="1.1 Collection.java">1.1 Collection.java</a></li>
+                <li>
+                    <a href="#12-abstractcollectionjava" aria-label="1.2 AbstractCollection.java">1.2 AbstractCollection.java</a></li>
+                <li>
+                    <a href="#13-collectionsjava" aria-label="1.3 Collections.java">1.3 Collections.java</a></li>
+                <li>
+                    <a href="#14-immutablecollectionsjava" aria-label="1.4 ImmutableCollections.java">1.4 ImmutableCollections.java</a></li></ul>
+                </li>
+                <li>
+                    <a href="#2-iterator" aria-label="2. Iterator">2. Iterator</a><ul>
+                        
+                <li>
+                    <a href="#21-iterablejava" aria-label="2.1 Iterable.java">2.1 Iterable.java</a></li>
+                <li>
+                    <a href="#22-iteratorjava" aria-label="2.2 Iterator.java">2.2 Iterator.java</a></li></ul>
+                </li>
+                <li>
+                    <a href="#3-%e5%b8%b8%e8%a7%81%e5%ae%b9%e5%99%a8%e7%b1%bb%e5%9e%8b" aria-label="3. 常见容器类型">3. 常见容器类型</a><ul>
+                        
+                <li>
+                    <a href="#list" aria-label="List">List</a><ul>
+                        
+                <li>
+                    <a href="#listof-%e4%b8%8e-unmodifiable-list" aria-label="List.of() 与 Unmodifiable List"><code>List.of()</code> 与 Unmodifiable List</a></li>
+                <li>
+                    <a href="#arraylistjava" aria-label="ArrayList.java">ArrayList.java</a></li></ul>
+                </li></ul>
+                </li>
+                <li>
+                    <a href="#%e5%90%8e%e8%ae%b0" aria-label="后记">后记</a>
+                </li>
+            </ul>
+        </div>
+    </details>
+</div>
+
   <div class="post-content"><p>在这门课程以及java的学习中,迭代器是一个比较值得重视的点.同时迭代器作为一个比较重要的概念,在很多比较现代的编程语言中都有它的身影.在之前的学习中我对java迭代器只有一些基础的概念与认知,并没有深入了解内部的原理,通过这次机会,我尝试将这部分内容认真的梳理一遍.</p>
 <p>同时,在这门课程中,我第一次接触到collection类型可变与不可变包装器的概念,即如下的表示</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">// 就像这样
