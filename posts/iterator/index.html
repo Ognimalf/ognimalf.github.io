@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Iterator | Salieri&#39;s Blog</title>
+<meta name="keywords" content="软件构造, java" />
+<meta name="description" content="java中collection类型迭代器源码阅读,以及collection类型可变与不可变类型包装器分析">
+<meta name="author" content="">
+<link rel="canonical" href="https://ognimalf.github.io/posts/iterator/" />
+<link crossorigin="anonymous" href="/assets/css/stylesheet.min.61dfb3f0b4cda95d2ccb867f9a3b244ce5d23e12492bcc3c277df594c7bc1adf.css" integrity="sha256-Yd&#43;z8LTNqV0sy4Z/mjskTOXSPhJJK8w8J331lMe8Gt8=" rel="preload stylesheet" as="style">
+<script defer crossorigin="anonymous" src="/assets/js/highlight.min.27cd435cc9ed6abb4b496581b151804f79f366c412620272bb94e2f5f598ebcc.js" integrity="sha256-J81DXMntartLSWWBsVGAT3nzZsQSYgJyu5Ti9fWY68w="
+    onload="hljs.initHighlightingOnLoad();"></script>
+<link rel="icon" href="https://ognimalf.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://ognimalf.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://ognimalf.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://ognimalf.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://ognimalf.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<meta name="generator" content="Hugo 0.68.3" />
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --hljs-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><meta property="og:title" content="Iterator" />
+<meta property="og:description" content="java中collection类型迭代器源码阅读,以及collection类型可变与不可变类型包装器分析" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ognimalf.github.io/posts/iterator/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-06-06T09:17:20&#43;09:00" />
+<meta property="article:modified_time" content="2022-06-06T09:17:20&#43;09:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Iterator"/>
+<meta name="twitter:description" content="java中collection类型迭代器源码阅读,以及collection类型可变与不可变类型包装器分析"/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [, 
+    {
+      "@type": "ListItem",
+      "position":  3 ,
+      "name": "Iterator",
+      "item": "https://ognimalf.github.io/posts/iterator/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Iterator",
+  "name": "Iterator",
+  "description": "java中collection类型迭代器源码阅读,以及collection类型可变与不可变类型包装器分析",
+  "keywords": [
+    "软件构造", "java"
+  ],
+  "articleBody": "在这门课程以及java的学习中,迭代器是一个比较值得重视的点.同时迭代器作为一个比较重要的概念,在很多比较现代的编程语言中都有它的身影.在之前的学习中我对java迭代器只有一些基础的概念与认知,并没有深入了解内部的原理,通过这次机会,我尝试将这部分内容认真的梳理一遍.\n同时,在这门课程中,我第一次接触到collection类型可变与不可变包装器的概念,即如下的表示\n// 就像这样 private ListInteger list = new ArrayList(); private ListInteger list1 = Collections.unmodifiableList(list); 这部分的概念目前我也只是掌握了一个大概，对于对象的引用理解还不够深刻。因此这篇博客就要好好解决这些问题，把这些彻底搞懂。\n废话不多说，开始。\n0. 整体安排 整体的结构，我打算按照如下的顺序来分析:\n  collection 类型，主要的源码包括：\ninterface\n Collection.java: collection接口定义与规约  implementations\n AbstractCollection.java Collections.java ImmutableCollections.java    iterator 迭代器相关，阅读以下源码：\n Iterable.java Iterator.java    List 容器类型的接口以及具体实现：\n List.java ArrayList.java    其实第3部分我原本打算把 Set 和 Map 容器一起分析，但是由于时间因素，目前只能搁置一旁，留待暑假时候补充了。而且 HashMap 作为 java 语言中一个重要的数据结构，深入阅读源代码了解具体的实现，对于学习也是很有帮助的。\n1. Collection 1.1 Collection.java Collection.java 是一个接口文件，内容主要是关于接口的一些讨论以及方法的规约，阅读起来比较简单，同时也是我们深入具体实现的突破口。\n我们知道，java 中非原始类型即 Object 类型的对象，在使用的时候都是以引用的方式呈现，并且存储在堆上。\n在Collection接口实现注释中，提到了4种Collection类型：\n View Collections Unmodifiable Collections Unmodifiable View Collections Serializability of Collections  这里我们不去关注第四种可序列化的容器，主要关注前面三个\nCollection 注释中提到的 view 容器，是在这引用更上一层的抽象，它并不直接指向存储对象，而是指向一般构造的 Object 对象，也就是引用的引用，相当于给普通的容器套了一层外壳。view 容器将实际对象的操作以委派(delegate)的方式交给在背后的实际容器对象。通过一次委派的方式，可以在容器的基础上添加或者限制一些功能。这样的设计应该是课程中提到的装饰器模式的一个实际应用，如果我没有理解错的话。我们将在之后提到的  Collections.unmodifiableCollection 就是一个典型的 view 容器对象的例子。\nunmodifiable collection，即不能被修改的容器。为了与 immutable 进行区分，这里将 unmodifiable 称为不可修改，immutable 称为不可变。这里的注释解释比较清楚，摘录如下：\n An unmodifiable collection is a collection, all of whose mutator methods (as defined above) are specified to throw UnsupportedOperationException. Such a collection thus cannot be modified by calling any methods on it. For a collection to be properly unmodifiable, any view collections derived from it must also be unmodifiable. For example, if a List is unmodifiable, the List returned by List.subList is also unmodifiable.\n 不可修改容器对于接口定义的所有的 mutator 方法不会被实现，而是简单的抛出 UnsupportedOperationException 即不支持操作异常。这是一个 RuntimeException 。如果一个 view 容器基于不可修改容器创建，那么 view 容器也是不可修改的。\n An unmodifiable collection is not necessarily immutable. If the contained elements are mutable, the entire collection is clearly mutable, even though it might be unmodifiable. For example, consider two unmodifiable lists containing mutable elements. The result of calling list1.equals(list2) might differ from one call to the next if the elements had been mutated, even though both lists are unmodifiable. However, if an unmodifiable collection contains all immutable elements, it can be considered effectively immutable.\n 一个不可修改容器只有在其存储的元素是不可变类型时才是不可变的。\nunmodifiable View Collections 简单来说，就是 view 容器即外壳是不可修改的。这样构造的对象对于实际存储内容只有读取的权限。但是需要注意的是，只有 view 委派的容器是不可变的，或者当前的 view 委派的容器是唯一的引用时，view 才是不可变的。\n我们查看接口的签名，其实根据功能也不难想到，Collection 实现了 Iterable 接口的功能，在后面我们将看到，Iterable 接口中定义了一个迭代器用于遍历容器内的元素：\npublic interface CollectionE extends IterableE { ... // 继承自 Iterable  IteratorE iterator(); } 我们接下来具体分析时需要注意的就是 add()，remove()，以及迭代器相关的方法。\n1.2 AbstractCollection.java AbstractCollection 抽象类的主要作用是方便实现不可修改的容器类型。它提供了对于 Collection 接口方法的一些基于迭代器的简单实现。我们实现不可修改容器时只需要继承这个抽象类并且再实现一小部分方法即可。\n1.3 Collections.java 这个类包括各种容器方法与返回各种装饰容器的静态方法的实现，Collections不需要任何的实例成员，所有的方法都是静态方法，可以通过类型进行调用。\n我们通过一个具体的例子来了解 Collections 如何返回不可修改容器。\npublic static T CollectionT unmodifiableCollection(Collection extends T c) { return new UnmodifiableCollection(c); } static class UnmodifiableCollectionE implements CollectionE, Serializable { @java.io.Serial private static final long serialVersionUID = 1820017752578914078L; @SuppressWarnings(\"serial\") // Conditionally serializable  final Collection extends E c; UnmodifiableCollection(Collection extends E c) { if (c==null) throw new NullPointerException(); this.c = c; } // 实现 Collection 接口的方法  public int size() {return c.size();} ... public IteratorE iterator() { return new IteratorE() { private final Iterator extends E i = c.iterator(); public boolean hasNext() {return i.hasNext();} public E next() {return i.next();} public void remove() { throw new UnsupportedOperationException(); } @Override public void forEachRemaining(Consumer super E action) { // Use backing collection version  i.forEachRemaining(action); } }; } // 对于 mutator 方法，抛出 UnsupportedOperationException  public boolean add(E e) { throw new UnsupportedOperationException(); } ... // Override default methods in Collection  @Override public void forEach(Consumer super E action) { c.forEach(action); } } Collections 中对于不可修改容器的实现采用装饰器模式与工厂方法模式。\nCollections 类中首先定义了一个静态内部类 UnmodifiableCollection，这个类实现了 Collection 接口。在类的内部定义一个私有的 final 的 Collection 作为委派，通过内部的 Collection 成员类实现接口的操作。同时因为不可修改的限制，接口中对应的 mutator 方法抛出不支持操作的异常。\n在定义完需要的容器之后，Collections 采用工厂方法模式，定义一个静态的构造方法，这个方法以实现 Collection 接口的对象 c 作为参数，将 c 作为不可修改容器内部的委派成员进行包装，返回 UnmodifiableCollection 对象。\n注意这里的泛型参数，c的泛型采用通配符的方式，? extends E 支持所有类型 E 的子类型以及 E 自身。这种方式满足动态类型分配的原则，可以将子类型绑定到父类型中，即编译时静态类型是父类型 E，动态类型是 E 以及 E 的子类型。具有更强的泛化能力，对于输入的要求更宽泛。\n其他不可修改容器也是按照类似的方式实现。\nUnmodifiableCollection 是所有不可修改容器的父类型，所有具体的不可修改容器例如 UnmodifiableSet，UnmodifiableList，UnmodifiableMap 等等都继承于它。\n一个有意思的例子就是 UnmodifiableList，在提供的工厂方法中，我们可以看到这个东西：\npublic static T ListT unmodifiableList(List extends T list) { return (list instanceof RandomAccess ? new UnmodifiableRandomAccessList(list) : new UnmodifiableList(list)); } 再看对应的静态类：\nstatic class UnmodifiableListE extends UnmodifiableCollectionE implements ListE static class UnmodifiableRandomAccessListE extends UnmodifiableListE implements RandomAccess; RandomAccess 是一个空接口，用来判断 List 实现是基于数组还是链表实现。\n1.4 ImmutableCollections.java 在 ImmutableCollections 类内实现了 AbstractImmutableList，AbstractImmutableSet，AbstractImmutableMap 等静态抽象类。这些抽象类都是作为具体容器类型的不可变形式的父类型。\n一个重要的父类是 AbstractImmutableCollection：\nstatic UnsupportedOperationException uoe() { return new UnsupportedOperationException(); } static abstract class AbstractImmutableCollectionE extends AbstractCollectionE { // all mutating methods throw UnsupportedOperationException  @Override public boolean add(E e) { throw uoe(); } @Override public boolean addAll(Collection extends E c) { throw uoe(); } @Override public void clear() { throw uoe(); } @Override public boolean remove(Object o) { throw uoe(); } @Override public boolean removeAll(Collection c) { throw uoe(); } @Override public boolean removeIf(Predicate super E filter) { throw uoe(); } @Override public boolean retainAll(Collection c) { throw uoe(); } } 这里继承抽象类 AbstractCollection，并将所有的 mutator 方法设置为不支持。\n// 这些容器的抽象类对各自的mutator方法处理 // 也是简单的抛出 UnsupportedOperationException static abstract class AbstractImmutableListE extends AbstractImmutableCollectionE implements ListE, RandomAccess { ... } static abstract class AbstractImmutableSetE extends AbstractImmutableCollectionE implements SetE { ... } abstract static class AbstractImmutableMapK,V extends AbstractMapK,V implements Serializable { ... } 上面给出了这些不可变抽象类的签名，我们发现除了 AbstractImmutableMap 特殊的继承自 AbstractMap 抽象类之外，这里将在第3部分进行分析，List 与 Set 的不可变抽象类都继承于 AbstractImmutableCollection。\n2. Iterator 2.1 Iterable.java Iterable 接口定义了可以迭代的类型需要满足的方法，在接口内定义了一个返回迭代器 Iterator 的方法。\npublic interface IterableT { IteratorT iterator(); default void forEach(Consumer super T action) { Objects.requireNonNull(action); for (T t : this) { action.accept(t); } } default SpliteratorT spliterator() { ... } } 接口中定义了三个方法，iterator() 返回对应类型的迭代器，forEach() 提供了一种方法对每个元素执行某种操作，spliterator() 返回一个 Spliterator，这个迭代器用于并行遍历元素，在这里我们不去深究。\n接下来我们将目光转向 Iterator 接口的定义，看看其中的方法以及规约的描述。\n2.2 Iterator.java Iterator 接口主要定义了四个方法，hasNext()，next()，remove() 与 forEachRemaining()\npublic interface IteratorE { boolean hasNext(); E next(); default void remove() { throw new UnsupportedOperationException(\"remove\"); } default void forEachRemaining(Consumer super E action) { Objects.requireNonNull(action); while (hasNext()) action.accept(next()); } }  hasNext() 返回迭代器是否还有下一个元素 next() 返回具体的下一个元素 remove() 将迭代器返回的最后一个元素，即最近一次调用的元素删除，注意在使用迭代器遍历元素时，remove() 在每次循环中 next() 调用之后只能被调用一次。 forEachRemaining() 对迭代器剩余的元素执行对应的操作。  关于 remove() 同样需要注意的一点，从规约的描述看来，remove() 至少需要在执行一次 next() 方法之后才能使用。否则就会像下面这样：\n{ ListInteger list = new ArrayList(); list.add(1); list.add(2); list.add(3); IteratorInteger iter = list.iterator(); iter.remove(); // 调用 remove()之前必须调用过 next()  assert list.size() == 2; } 这个例子会导致下面的报错信息：\nException in thread \"main\" java.lang.IllegalStateException at java.base/java.util.ArrayList$Itr.remove(ArrayList.java:980) at Temp.main(Temp.java:25) 3. 常见容器类型 在阅读完对应的容器接口与迭代器接口代码以及注释之后，就可以开始分析具体的容器类型如 List，Set，Map 的实现了。\nList List 接口提供了一个特殊的 ListIterator 迭代器，它允许元素的插入与替换，同时支持获取对应索引处的迭代器。\n值得注意的是，如果允许 List 对象存储自身，那么 equals() 与 hashCode() 可能不会正常工作。\nList.of() 与 Unmodifiable List List 中还提供了 of() 与 copyOf() 方法返回不可修改的 List 对象。这里摘录几条注释中关于不可修改对象的说明：\n  They are unmodifiable. Elements cannot be added, removed, or replaced. Calling any mutator method on the List will always cause UnsupportedOperationException to be thrown. However, if the contained elements are themselves mutable, this may cause the List’s contents to appear to change. They disallow null elements. Attempts to create them with null elements result in NullPointerException. The lists and their subList views implement the RandomAccess interface.   我们以 of() 为例，观察在 List 接口中的默认实现，of() 方法提供了很多中重载方法，但是我不太清楚为什么需要这么多。。\n// List.java static E ListE of(E... elements) { switch (elements.length) { // implicit null check of elements  case 0: @SuppressWarnings(\"unchecked\") var list = (ListE) ImmutableCollections.EMPTY_LIST; return list; case 1: return new ImmutableCollections.List12(elements[0]); case 2: return new ImmutableCollections.List12(elements[0], elements[1]); default: return ImmutableCollections.listFromArray(elements); } } 很明显，这里返回的不可修改的 List 对象被定义在 ImmutableCollections 类中，如果传入的元素是一个或者两个，那么返回对象动态类型是 List12，否则 ListN。在 ImmutableCollections 中对于空的 Unmodifiable List 有专门的定义。\n// ImmutableCollections.java static final ListN EMPTY_LIST; { // 初始化  EMPTY_LIST = new ListN(new Object[0], false); ... } static final class List12E extends AbstractImmutableListE implements Serializable { private final E e0; private final Object e1; List12(E e0) { this.e0 = Objects.requireNonNull(e0); // Use EMPTY as a sentinel for an unused element: not using null  // enables constant folding optimizations over single-element lists  this.e1 = EMPTY; } List12(E e0, E e1) { this.e0 = Objects.requireNonNull(e0); this.e1 = Objects.requireNonNull(e1); } ... } static final class ListNE extends AbstractImmutableListE implements Serializable { private final E[] elements; private final boolean allowNulls; // caller must ensure that elements has no nulls if allowNulls is false  private ListN(E[] elements, boolean allowNulls) { this.elements = elements; this.allowNulls = allowNulls; } ... } 可以看到 ListN 实质是将数组进行包装实现不可变 List。\nList 接口中对于迭代器的实现仍然没有做出具体的描述，我们继续深入到具体的实现，查看 ArrayList 是如何实现迭代器以及如何使用迭代器对 List 元素进行修改。同时由于 LSP 原则，理论上我们可以确定 LinkedList 对于迭代器的行为应该表现的与 ArrayList 相同，所以只分析一个也是可以的。\nArrayList.java 直奔主题，我们来看迭代器的实现：\n// ArratList.java public IteratorE iterator() { return new Itr(); } private class Itr implements IteratorE { int cursor; // index of next element to return  int lastRet = -1; // index of last element returned; -1 if no such  int expectedModCount = modCount; // prevent creating a synthetic constructor  Itr() {} public boolean hasNext() { return cursor != size; } @SuppressWarnings(\"unchecked\") public E next() { checkForComodification(); int i = cursor; if (i = size) throw new NoSuchElementException(); Object[] elementData = ArrayList.this.elementData; if (i = elementData.length) throw new ConcurrentModificationException(); cursor = i + 1; return (E) elementData[lastRet = i]; } public void remove() { if (lastRet  0) throw new IllegalStateException(); checkForComodification(); try { ArrayList.this.remove(lastRet); cursor = lastRet; lastRet = -1; expectedModCount = modCount; } catch (IndexOutOfBoundsException ex) { throw new ConcurrentModificationException(); } } @Override public void forEachRemaining(Consumer super E action) { ... } final void checkForComodification() { if (modCount != expectedModCount) throw new ConcurrentModificationException(); } } 在内部我们可以看到迭代器通过 cursor 来标记当前的索引位置，lastRet 存储上一次元素的索引。\nnext() 实现简单的将 cursor 更新，并且返回更新之前 cursor 索引处的元素。\n在 remove() 实现中，首先判断 lastRet 是否存在，如果不存在就抛出异常；如果存在，就通过调用 ArrayList.this.remove(lastRet) 将对应之前遍历的元素删除，并且将 lastRet 设置为-1，这也表明在一次循环中，一次 next() 调用至多只能调用一次 iter.remove()。\nArrayList 中使用 modCount 记录内部元素的修改，迭代器通过判断 expectedModCount 与 modCount 相等确保 List 的元素不会在迭代器遍历过程中被外部 add() 等方法调用改变。\npublic E remove(int index) { Objects.checkIndex(index, size); final Object[] es = elementData; @SuppressWarnings(\"unchecked\") E oldValue = (E) es[index]; fastRemove(es, index); return oldValue; } 上面给出的是 ArrayList 中的 remove() 方法。不难发现，remove() 并没有修改 modCount，因此如果我们在 ArrayList 使用迭代器遍历元素过程中直接调用 ArrayList.remove()，在某些情况下并不会抛出异常，但是实际上容器内的结构已经出现变化，最终产生错误的结果。因此在使用迭代器的过程中，最好使用迭代器提供的 remove() 方法，同时如果需要对容器添加或者修改元素，可以使用 List 提供的 listIterator 迭代器。\n后记 总体上来说，这是我第一次尝试阅读库代码，并且去了解 java 语言基本数据类型的实现。这些源代码的阅读难度不大，甚至可以说比较轻松和简单，但是同样具有意义。一个是通过这次的阅读，将之前上课时一些模糊的概念重新的梳理了一遍，对复习有一定的帮助，另外也让自己在阅读源码这一方面的学习开了一个头。同样，由于时间的原因，最初开始写这篇博客时规划的内容一部分被暂时搁置，只能寄希望于马上结束考试周赶紧补完吧，毕竟是自己写的东西，虎头蛇尾的感觉确实很让人不爽。有些东西自己目前感觉表达的不是很好，也不知道在阅读过程中学习到的东西有没有很好的表达出来。但是既然步子已经迈开了，以后想必会更加习惯这样的过程，感觉也还可以，就先这样吧。\n",
+  "wordCount" : "1318",
+  "inLanguage": "en",
+  "datePublished": "2022-06-06T09:17:20+09:00",
+  "dateModified": "2022-06-06T09:17:20+09:00",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://ognimalf.github.io/posts/iterator/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Salieri's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://ognimalf.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://ognimalf.github.io" accesskey="h" title="Salieri&#39;s Blog (Alt + H)">Salieri&#39;s Blog</a>
+            <span class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </span>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://ognimalf.github.io/categories/" title="categories">
+                    <span>categories</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://ognimalf.github.io/tags/" title="tags">
+                    <span>tags</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="https://ognimalf.github.io">Home</a></div>
+    <h1 class="post-title">
+      Iterator
+    </h1>
+    <div class="post-meta"><span title='2022-06-06 09:17:20 +0900 KST'>June 6, 2022</span>
+
+</div>
+  </header> 
+  <div class="post-content"><p>在这门课程以及java的学习中,迭代器是一个比较值得重视的点.同时迭代器作为一个比较重要的概念,在很多比较现代的编程语言中都有它的身影.在之前的学习中我对java迭代器只有一些基础的概念与认知,并没有深入了解内部的原理,通过这次机会,我尝试将这部分内容认真的梳理一遍.</p>
+<p>同时,在这门课程中,我第一次接触到collection类型可变与不可变包装器的概念,即如下的表示</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">// 就像这样
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">private</span> List<span style="color:#f92672">&lt;</span>Integer<span style="color:#f92672">&gt;</span> list <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> ArrayList<span style="color:#f92672">&lt;&gt;();</span>
+<span style="color:#66d9ef">private</span> List<span style="color:#f92672">&lt;</span>Integer<span style="color:#f92672">&gt;</span> list1 <span style="color:#f92672">=</span> Collections<span style="color:#f92672">.</span><span style="color:#a6e22e">unmodifiableList</span><span style="color:#f92672">(</span>list<span style="color:#f92672">);</span>
+</code></pre></div><p>这部分的概念目前我也只是掌握了一个大概，对于对象的引用理解还不够深刻。因此这篇博客就要好好解决这些问题，把这些彻底搞懂。</p>
+<p>废话不多说，开始。</p>
+<h2 id="0-整体安排">0. 整体安排<a hidden class="anchor" aria-hidden="true" href="#0-整体安排">#</a></h2>
+<p>整体的结构，我打算按照如下的顺序来分析:</p>
+<ol>
+<li>
+<p>collection 类型，主要的源码包括：<br>
+interface</p>
+<ul>
+<li>Collection.java: collection接口定义与规约</li>
+</ul>
+<p>implementations</p>
+<ul>
+<li>AbstractCollection.java</li>
+<li>Collections.java</li>
+<li>ImmutableCollections.java</li>
+</ul>
+</li>
+<li>
+<p>iterator 迭代器相关，阅读以下源码：</p>
+<ul>
+<li>Iterable.java</li>
+<li>Iterator.java</li>
+</ul>
+</li>
+<li>
+<p>List 容器类型的接口以及具体实现：</p>
+<ul>
+<li>List.java</li>
+<li>ArrayList.java</li>
+</ul>
+</li>
+</ol>
+<p>其实第3部分我原本打算把 Set 和 Map 容器一起分析，但是由于时间因素，目前只能搁置一旁，留待暑假时候补充了。而且 <code>HashMap</code> 作为 java 语言中一个重要的数据结构，深入阅读源代码了解具体的实现，对于学习也是很有帮助的。</p>
+<h2 id="1-collection">1. Collection<a hidden class="anchor" aria-hidden="true" href="#1-collection">#</a></h2>
+<h3 id="11-collectionjava">1.1 Collection.java<a hidden class="anchor" aria-hidden="true" href="#11-collectionjava">#</a></h3>
+<p>Collection.java 是一个接口文件，内容主要是关于接口的一些讨论以及方法的规约，阅读起来比较简单，同时也是我们深入具体实现的突破口。</p>
+<p>我们知道，java 中非原始类型即 Object 类型的对象，在使用的时候都是以引用的方式呈现，并且存储在堆上。</p>
+<p>在Collection接口实现注释中，提到了4种Collection类型：</p>
+<ul>
+<li>View Collections</li>
+<li>Unmodifiable Collections</li>
+<li>Unmodifiable View Collections</li>
+<li>Serializability of Collections</li>
+</ul>
+<p>这里我们不去关注第四种可序列化的容器，主要关注前面三个</p>
+<p>Collection 注释中提到的 view 容器，是在这引用更上一层的抽象，它并不直接指向存储对象，而是指向一般构造的 Object 对象，也就是引用的引用，相当于给普通的容器套了一层外壳。view 容器将实际对象的操作以委派(delegate)的方式交给在背后的实际容器对象。通过一次委派的方式，可以在容器的基础上添加或者限制一些功能。这样的设计应该是课程中提到的装饰器模式的一个实际应用，如果我没有理解错的话。我们将在之后提到的 <code> Collections.unmodifiableCollection</code> 就是一个典型的 view 容器对象的例子。</p>
+<p><code>unmodifiable collection</code>，即不能被修改的容器。为了与 immutable 进行区分，这里将 unmodifiable 称为不可修改，immutable 称为不可变。这里的注释解释比较清楚，摘录如下：</p>
+<blockquote>
+<p>An unmodifiable collection is a collection, all of whose mutator methods (as defined above) are specified to throw UnsupportedOperationException. Such a collection thus cannot be modified by calling any methods on it. For a collection to be properly unmodifiable, any view collections derived from it must also be unmodifiable. For example, if a List is unmodifiable, the List returned by List.subList is also unmodifiable.</p>
+</blockquote>
+<p><em>不可修改</em>容器对于接口定义的所有的 mutator 方法不会被实现，而是简单的抛出 <code>UnsupportedOperationException</code> 即不支持操作异常。这是一个 <font color=red><code>RuntimeException</code></font> 。如果一个 view 容器基于<em>不可修改</em>容器创建，那么 view 容器也是<em>不可修改</em>的。</p>
+<blockquote>
+<p>An unmodifiable collection is not necessarily immutable. If the contained elements are mutable, the entire collection is clearly mutable, even though it might be unmodifiable. For example, consider two unmodifiable lists containing mutable elements. The result of calling list1.equals(list2) might differ from one call to the next if the elements had been mutated, even though both lists are unmodifiable. However, if an unmodifiable collection contains all immutable elements, it can be considered effectively immutable.</p>
+</blockquote>
+<p>一个<em>不可修改</em>容器只有在其存储的元素是不可变类型时才是不可变的。</p>
+<p><code>unmodifiable View Collections</code> 简单来说，就是 view 容器即外壳是<em>不可修改</em>的。这样构造的对象对于实际存储内容只有读取的权限。但是需要注意的是，只有 view 委派的容器是不可变的，或者当前的 view 委派的容器是唯一的引用时，view 才是不可变的。</p>
+<p>我们查看接口的签名，其实根据功能也不难想到，Collection 实现了 Iterable 接口的功能，在后面我们将看到，Iterable 接口中定义了一个迭代器用于遍历容器内的元素：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">interface</span> <span style="color:#a6e22e">Collection</span><span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;</span> <span style="color:#66d9ef">extends</span> Iterable<span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;</span> <span style="color:#f92672">{</span>
+    <span style="color:#f92672">...</span>
+    <span style="color:#75715e">// 继承自 Iterable
+</span><span style="color:#75715e"></span>    Iterator<span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">iterator</span><span style="color:#f92672">();</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>我们接下来具体分析时需要注意的就是 <code>add()</code>，<code>remove()</code>，以及迭代器相关的方法。</p>
+<h3 id="12-abstractcollectionjava">1.2 AbstractCollection.java<a hidden class="anchor" aria-hidden="true" href="#12-abstractcollectionjava">#</a></h3>
+<p><code>AbstractCollection</code> 抽象类的主要作用是方便实现<strong>不可修改</strong>的容器类型。它提供了对于 Collection 接口方法的一些基于迭代器的简单实现。我们实现<strong>不可修改</strong>容器时只需要继承这个抽象类并且再实现一小部分方法即可。</p>
+<h3 id="13-collectionsjava">1.3 Collections.java<a hidden class="anchor" aria-hidden="true" href="#13-collectionsjava">#</a></h3>
+<p>这个类包括各种容器方法与返回各种装饰容器的静态方法的实现，Collections不需要任何的实例成员，所有的方法都是静态方法，可以通过类型进行调用。</p>
+<p>我们通过一个具体的例子来了解 Collections 如何返回不可修改容器。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#f92672">&lt;</span>T<span style="color:#f92672">&gt;</span> Collection<span style="color:#f92672">&lt;</span>T<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">unmodifiableCollection</span><span style="color:#f92672">(</span>Collection<span style="color:#f92672">&lt;?</span> <span style="color:#66d9ef">extends</span> T<span style="color:#f92672">&gt;</span> c<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> UnmodifiableCollection<span style="color:#f92672">&lt;&gt;(</span>c<span style="color:#f92672">);</span>
+<span style="color:#f92672">}</span>
+
+<span style="color:#66d9ef">static</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">UnmodifiableCollection</span><span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;</span> <span style="color:#66d9ef">implements</span> Collection<span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;,</span> Serializable <span style="color:#f92672">{</span>
+    <span style="color:#a6e22e">@java.io.Serial</span>
+    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">long</span> serialVersionUID <span style="color:#f92672">=</span> 1820017752578914078L<span style="color:#f92672">;</span>
+
+    <span style="color:#a6e22e">@SuppressWarnings</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;serial&#34;</span><span style="color:#f92672">)</span> <span style="color:#75715e">// Conditionally serializable
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">final</span> Collection<span style="color:#f92672">&lt;?</span> <span style="color:#66d9ef">extends</span> E<span style="color:#f92672">&gt;</span> c<span style="color:#f92672">;</span>
+
+    UnmodifiableCollection<span style="color:#f92672">(</span>Collection<span style="color:#f92672">&lt;?</span> <span style="color:#66d9ef">extends</span> E<span style="color:#f92672">&gt;</span> c<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>c<span style="color:#f92672">==</span><span style="color:#66d9ef">null</span><span style="color:#f92672">)</span>
+            <span style="color:#66d9ef">throw</span> <span style="color:#66d9ef">new</span> NullPointerException<span style="color:#f92672">();</span>
+        <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">c</span> <span style="color:#f92672">=</span> c<span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span>
+
+    <span style="color:#75715e">// 实现 Collection 接口的方法
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">size</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span><span style="color:#66d9ef">return</span> c<span style="color:#f92672">.</span><span style="color:#a6e22e">size</span><span style="color:#f92672">();}</span>
+    
+    <span style="color:#f92672">...</span>
+    
+    <span style="color:#66d9ef">public</span> Iterator<span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">iterator</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> Iterator<span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;()</span> <span style="color:#f92672">{</span>
+            <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> Iterator<span style="color:#f92672">&lt;?</span> <span style="color:#66d9ef">extends</span> E<span style="color:#f92672">&gt;</span> i <span style="color:#f92672">=</span> c<span style="color:#f92672">.</span><span style="color:#a6e22e">iterator</span><span style="color:#f92672">();</span>
+
+            <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">boolean</span> <span style="color:#a6e22e">hasNext</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span><span style="color:#66d9ef">return</span> i<span style="color:#f92672">.</span><span style="color:#a6e22e">hasNext</span><span style="color:#f92672">();}</span>
+            <span style="color:#66d9ef">public</span> E <span style="color:#a6e22e">next</span><span style="color:#f92672">()</span>          <span style="color:#f92672">{</span><span style="color:#66d9ef">return</span> i<span style="color:#f92672">.</span><span style="color:#a6e22e">next</span><span style="color:#f92672">();}</span>
+            <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">remove</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+                <span style="color:#66d9ef">throw</span> <span style="color:#66d9ef">new</span> UnsupportedOperationException<span style="color:#f92672">();</span>
+            <span style="color:#f92672">}</span>
+            <span style="color:#a6e22e">@Override</span>
+            <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">forEachRemaining</span><span style="color:#f92672">(</span>Consumer<span style="color:#f92672">&lt;?</span> <span style="color:#66d9ef">super</span> E<span style="color:#f92672">&gt;</span> action<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                <span style="color:#75715e">// Use backing collection version
+</span><span style="color:#75715e"></span>                i<span style="color:#f92672">.</span><span style="color:#a6e22e">forEachRemaining</span><span style="color:#f92672">(</span>action<span style="color:#f92672">);</span>
+            <span style="color:#f92672">}</span>
+        <span style="color:#f92672">};</span>
+    <span style="color:#f92672">}</span>
+
+    <span style="color:#75715e">// 对于 mutator 方法，抛出 UnsupportedOperationException
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">boolean</span> <span style="color:#a6e22e">add</span><span style="color:#f92672">(</span>E e<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">throw</span> <span style="color:#66d9ef">new</span> UnsupportedOperationException<span style="color:#f92672">();</span>
+    <span style="color:#f92672">}</span>
+
+    <span style="color:#f92672">...</span>
+
+    <span style="color:#75715e">// Override default methods in Collection
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">@Override</span>
+    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">forEach</span><span style="color:#f92672">(</span>Consumer<span style="color:#f92672">&lt;?</span> <span style="color:#66d9ef">super</span> E<span style="color:#f92672">&gt;</span> action<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        c<span style="color:#f92672">.</span><span style="color:#a6e22e">forEach</span><span style="color:#f92672">(</span>action<span style="color:#f92672">);</span>
+    <span style="color:#f92672">}</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>Collections 中对于不可修改容器的实现采用装饰器模式与工厂方法模式。</p>
+<p>Collections 类中首先定义了一个静态内部类 <code>UnmodifiableCollection</code>，这个类实现了 Collection 接口。在类的内部定义一个私有的 final 的 Collection 作为委派，通过内部的 Collection 成员类实现接口的操作。同时因为不可修改的限制，接口中对应的 mutator 方法抛出不支持操作的异常。</p>
+<p>在定义完需要的容器之后，Collections 采用工厂方法模式，定义一个静态的构造方法，这个方法以实现 Collection 接口的对象 c 作为参数，将 c 作为不可修改容器内部的委派成员进行包装，返回 <code>UnmodifiableCollection</code> 对象。</p>
+<p>注意这里的泛型参数，c的泛型采用通配符的方式，<code>? extends E</code> 支持所有类型 <code>E</code> 的子类型以及 <code>E</code> 自身。这种方式满足动态类型分配的原则，可以将子类型绑定到父类型中，即编译时静态类型是父类型 <code>E</code>，动态类型是 <code>E</code> 以及 <code>E</code> 的子类型。具有更强的泛化能力，对于输入的要求更宽泛。</p>
+<p>其他不可修改容器也是按照类似的方式实现。</p>
+<p><code>UnmodifiableCollection</code> 是所有不可修改容器的父类型，所有具体的不可修改容器例如 <code>UnmodifiableSet</code>，<code>UnmodifiableList</code>，<code>UnmodifiableMap</code> 等等都继承于它。</p>
+<p>一个有意思的例子就是 <code>UnmodifiableList</code>，在提供的工厂方法中，我们可以看到这个东西：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#f92672">&lt;</span>T<span style="color:#f92672">&gt;</span> List<span style="color:#f92672">&lt;</span>T<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">unmodifiableList</span><span style="color:#f92672">(</span>List<span style="color:#f92672">&lt;?</span> <span style="color:#66d9ef">extends</span> T<span style="color:#f92672">&gt;</span> list<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">return</span> <span style="color:#f92672">(</span>list <span style="color:#66d9ef">instanceof</span> RandomAccess <span style="color:#f92672">?</span>
+            <span style="color:#66d9ef">new</span> UnmodifiableRandomAccessList<span style="color:#f92672">&lt;&gt;(</span>list<span style="color:#f92672">)</span> <span style="color:#f92672">:</span>
+            <span style="color:#66d9ef">new</span> UnmodifiableList<span style="color:#f92672">&lt;&gt;(</span>list<span style="color:#f92672">));</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>再看对应的静态类：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">UnmodifiableList</span><span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;</span> <span style="color:#66d9ef">extends</span> UnmodifiableCollection<span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;</span>
+                              <span style="color:#66d9ef">implements</span> List<span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;</span>
+
+<span style="color:#66d9ef">static</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">UnmodifiableRandomAccessList</span><span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;</span> <span style="color:#66d9ef">extends</span> UnmodifiableList<span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;</span>
+                                          <span style="color:#66d9ef">implements</span> RandomAccess<span style="color:#f92672">;</span>
+</code></pre></div><p><code>RandomAccess</code> 是一个空接口，用来判断 List 实现是基于数组还是链表实现。</p>
+<h3 id="14-immutablecollectionsjava">1.4 ImmutableCollections.java<a hidden class="anchor" aria-hidden="true" href="#14-immutablecollectionsjava">#</a></h3>
+<p>在 ImmutableCollections 类内实现了 <code>AbstractImmutableList</code>，<code>AbstractImmutableSet</code>，<code>AbstractImmutableMap</code> 等静态抽象类。这些抽象类都是作为具体容器类型的不可变形式的父类型。</p>
+<p>一个重要的父类是 <code>AbstractImmutableCollection</code>：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">static</span> UnsupportedOperationException <span style="color:#a6e22e">uoe</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span> <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> UnsupportedOperationException<span style="color:#f92672">();</span> <span style="color:#f92672">}</span>
+
+<span style="color:#66d9ef">static</span> <span style="color:#66d9ef">abstract</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">AbstractImmutableCollection</span><span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;</span> <span style="color:#66d9ef">extends</span> AbstractCollection<span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;</span> <span style="color:#f92672">{</span>
+    <span style="color:#75715e">// all mutating methods throw UnsupportedOperationException
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">@Override</span> <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">boolean</span> <span style="color:#a6e22e">add</span><span style="color:#f92672">(</span>E e<span style="color:#f92672">)</span> <span style="color:#f92672">{</span> <span style="color:#66d9ef">throw</span> uoe<span style="color:#f92672">();</span> <span style="color:#f92672">}</span>
+    <span style="color:#a6e22e">@Override</span> <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">boolean</span> <span style="color:#a6e22e">addAll</span><span style="color:#f92672">(</span>Collection<span style="color:#f92672">&lt;?</span> <span style="color:#66d9ef">extends</span> E<span style="color:#f92672">&gt;</span> c<span style="color:#f92672">)</span> <span style="color:#f92672">{</span> <span style="color:#66d9ef">throw</span> uoe<span style="color:#f92672">();</span> <span style="color:#f92672">}</span>
+    <span style="color:#a6e22e">@Override</span> <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span>    <span style="color:#a6e22e">clear</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span> <span style="color:#66d9ef">throw</span> uoe<span style="color:#f92672">();</span> <span style="color:#f92672">}</span>
+    <span style="color:#a6e22e">@Override</span> <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">boolean</span> <span style="color:#a6e22e">remove</span><span style="color:#f92672">(</span>Object o<span style="color:#f92672">)</span> <span style="color:#f92672">{</span> <span style="color:#66d9ef">throw</span> uoe<span style="color:#f92672">();</span> <span style="color:#f92672">}</span>
+    <span style="color:#a6e22e">@Override</span> <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">boolean</span> <span style="color:#a6e22e">removeAll</span><span style="color:#f92672">(</span>Collection<span style="color:#f92672">&lt;?&gt;</span> c<span style="color:#f92672">)</span> <span style="color:#f92672">{</span> <span style="color:#66d9ef">throw</span> uoe<span style="color:#f92672">();</span> <span style="color:#f92672">}</span>
+    <span style="color:#a6e22e">@Override</span> <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">boolean</span> <span style="color:#a6e22e">removeIf</span><span style="color:#f92672">(</span>Predicate<span style="color:#f92672">&lt;?</span> <span style="color:#66d9ef">super</span> E<span style="color:#f92672">&gt;</span> filter<span style="color:#f92672">)</span> <span style="color:#f92672">{</span> <span style="color:#66d9ef">throw</span> uoe<span style="color:#f92672">();</span> <span style="color:#f92672">}</span>
+    <span style="color:#a6e22e">@Override</span> <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">boolean</span> <span style="color:#a6e22e">retainAll</span><span style="color:#f92672">(</span>Collection<span style="color:#f92672">&lt;?&gt;</span> c<span style="color:#f92672">)</span> <span style="color:#f92672">{</span> <span style="color:#66d9ef">throw</span> uoe<span style="color:#f92672">();</span> <span style="color:#f92672">}</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>这里继承抽象类 <code>AbstractCollection</code>，并将所有的 mutator 方法设置为不支持。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">// 这些容器的抽象类对各自的mutator方法处理
+</span><span style="color:#75715e">// 也是简单的抛出 UnsupportedOperationException
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">abstract</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">AbstractImmutableList</span><span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;</span> <span style="color:#66d9ef">extends</span> AbstractImmutableCollection<span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;</span>
+        <span style="color:#66d9ef">implements</span> List<span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;,</span> RandomAccess <span style="color:#f92672">{</span>
+    <span style="color:#f92672">...</span>
+<span style="color:#f92672">}</span>
+
+<span style="color:#66d9ef">static</span> <span style="color:#66d9ef">abstract</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">AbstractImmutableSet</span><span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;</span> <span style="color:#66d9ef">extends</span> AbstractImmutableCollection<span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;</span>
+        <span style="color:#66d9ef">implements</span> Set<span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;</span> <span style="color:#f92672">{</span>
+    <span style="color:#f92672">...</span>
+<span style="color:#f92672">}</span>
+
+<span style="color:#66d9ef">abstract</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">AbstractImmutableMap</span><span style="color:#f92672">&lt;</span>K<span style="color:#f92672">,</span>V<span style="color:#f92672">&gt;</span> <span style="color:#66d9ef">extends</span> AbstractMap<span style="color:#f92672">&lt;</span>K<span style="color:#f92672">,</span>V<span style="color:#f92672">&gt;</span> <span style="color:#66d9ef">implements</span> Serializable <span style="color:#f92672">{</span>
+    <span style="color:#f92672">...</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>上面给出了这些不可变抽象类的签名，我们发现除了 <code>AbstractImmutableMap</code> 特殊的继承自 <code>AbstractMap</code> 抽象类之外，这里将在第3部分进行分析，List 与 Set 的不可变抽象类都继承于 <code>AbstractImmutableCollection</code>。</p>
+<h2 id="2-iterator">2. Iterator<a hidden class="anchor" aria-hidden="true" href="#2-iterator">#</a></h2>
+<h3 id="21-iterablejava">2.1 Iterable.java<a hidden class="anchor" aria-hidden="true" href="#21-iterablejava">#</a></h3>
+<p>Iterable 接口定义了可以迭代的类型需要满足的方法，在接口内定义了一个返回迭代器 Iterator 的方法。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">interface</span> <span style="color:#a6e22e">Iterable</span><span style="color:#f92672">&lt;</span>T<span style="color:#f92672">&gt;</span> <span style="color:#f92672">{</span>
+    Iterator<span style="color:#f92672">&lt;</span>T<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">iterator</span><span style="color:#f92672">();</span>
+
+    <span style="color:#66d9ef">default</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">forEach</span><span style="color:#f92672">(</span>Consumer<span style="color:#f92672">&lt;?</span> <span style="color:#66d9ef">super</span> T<span style="color:#f92672">&gt;</span> action<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        Objects<span style="color:#f92672">.</span><span style="color:#a6e22e">requireNonNull</span><span style="color:#f92672">(</span>action<span style="color:#f92672">);</span>
+        <span style="color:#66d9ef">for</span> <span style="color:#f92672">(</span>T t <span style="color:#f92672">:</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            action<span style="color:#f92672">.</span><span style="color:#a6e22e">accept</span><span style="color:#f92672">(</span>t<span style="color:#f92672">);</span>
+        <span style="color:#f92672">}</span>
+    <span style="color:#f92672">}</span>
+
+    <span style="color:#66d9ef">default</span> Spliterator<span style="color:#f92672">&lt;</span>T<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">spliterator</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+        <span style="color:#f92672">...</span>
+    <span style="color:#f92672">}</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>接口中定义了三个方法，<code>iterator()</code> 返回对应类型的迭代器，<code>forEach()</code> 提供了一种方法对每个元素执行某种操作，<code>spliterator()</code> 返回一个 <code>Spliterator</code>，这个迭代器用于并行遍历元素，在这里我们不去深究。</p>
+<p>接下来我们将目光转向 Iterator 接口的定义，看看其中的方法以及规约的描述。</p>
+<h3 id="22-iteratorjava">2.2 Iterator.java<a hidden class="anchor" aria-hidden="true" href="#22-iteratorjava">#</a></h3>
+<p>Iterator 接口主要定义了四个方法，<code>hasNext()</code>，<code>next()</code>，<code>remove()</code> 与 <code>forEachRemaining()</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">interface</span> <span style="color:#a6e22e">Iterator</span><span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;</span> <span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">boolean</span> <span style="color:#a6e22e">hasNext</span><span style="color:#f92672">();</span>
+
+    E <span style="color:#a6e22e">next</span><span style="color:#f92672">();</span>
+
+    <span style="color:#66d9ef">default</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">remove</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">throw</span> <span style="color:#66d9ef">new</span> UnsupportedOperationException<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;remove&#34;</span><span style="color:#f92672">);</span>
+    <span style="color:#f92672">}</span>
+
+    <span style="color:#66d9ef">default</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">forEachRemaining</span><span style="color:#f92672">(</span>Consumer<span style="color:#f92672">&lt;?</span> <span style="color:#66d9ef">super</span> E<span style="color:#f92672">&gt;</span> action<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        Objects<span style="color:#f92672">.</span><span style="color:#a6e22e">requireNonNull</span><span style="color:#f92672">(</span>action<span style="color:#f92672">);</span>
+        <span style="color:#66d9ef">while</span> <span style="color:#f92672">(</span>hasNext<span style="color:#f92672">())</span>
+            action<span style="color:#f92672">.</span><span style="color:#a6e22e">accept</span><span style="color:#f92672">(</span>next<span style="color:#f92672">());</span>
+    <span style="color:#f92672">}</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><ul>
+<li><code>hasNext()</code> 返回迭代器是否还有下一个元素</li>
+<li><code>next()</code> 返回具体的下一个元素</li>
+<li><code>remove()</code> 将迭代器返回的最后一个元素，即最近一次调用的元素删除，注意在使用迭代器遍历元素时，<strong><code>remove()</code> 在每次循环中 <code>next()</code> 调用之后只能被调用一次</strong>。</li>
+<li><code>forEachRemaining()</code> 对迭代器剩余的元素执行对应的操作。</li>
+</ul>
+<p>关于 <code>remove()</code> 同样需要注意的一点，从规约的描述看来，<code>remove()</code> 至少需要在执行一次 <code>next()</code> 方法之后才能使用。否则就会像下面这样：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#f92672">{</span>
+    List<span style="color:#f92672">&lt;</span>Integer<span style="color:#f92672">&gt;</span> list <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> ArrayList<span style="color:#f92672">&lt;&gt;();</span>
+    list<span style="color:#f92672">.</span><span style="color:#a6e22e">add</span><span style="color:#f92672">(</span>1<span style="color:#f92672">);</span>
+    list<span style="color:#f92672">.</span><span style="color:#a6e22e">add</span><span style="color:#f92672">(</span>2<span style="color:#f92672">);</span>
+    list<span style="color:#f92672">.</span><span style="color:#a6e22e">add</span><span style="color:#f92672">(</span>3<span style="color:#f92672">);</span>
+    Iterator<span style="color:#f92672">&lt;</span>Integer<span style="color:#f92672">&gt;</span> iter <span style="color:#f92672">=</span> list<span style="color:#f92672">.</span><span style="color:#a6e22e">iterator</span><span style="color:#f92672">();</span>
+    iter<span style="color:#f92672">.</span><span style="color:#a6e22e">remove</span><span style="color:#f92672">();</span> <span style="color:#75715e">// 调用 remove()之前必须调用过 next()
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">assert</span> list<span style="color:#f92672">.</span><span style="color:#a6e22e">size</span><span style="color:#f92672">()</span> <span style="color:#f92672">==</span> 2<span style="color:#f92672">;</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>这个例子会导致下面的报错信息：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">Exception in thread <span style="color:#e6db74">&#34;main&#34;</span> java<span style="color:#f92672">.</span><span style="color:#a6e22e">lang</span><span style="color:#f92672">.</span><span style="color:#a6e22e">IllegalStateException</span>
+	at java<span style="color:#f92672">.</span><span style="color:#a6e22e">base</span><span style="color:#f92672">/</span>java<span style="color:#f92672">.</span><span style="color:#a6e22e">util</span><span style="color:#f92672">.</span><span style="color:#a6e22e">ArrayList$Itr</span><span style="color:#f92672">.</span><span style="color:#a6e22e">remove</span><span style="color:#f92672">(</span>ArrayList<span style="color:#f92672">.</span><span style="color:#a6e22e">java</span><span style="color:#f92672">:</span>980<span style="color:#f92672">)</span>
+	at Temp<span style="color:#f92672">.</span><span style="color:#a6e22e">main</span><span style="color:#f92672">(</span>Temp<span style="color:#f92672">.</span><span style="color:#a6e22e">java</span><span style="color:#f92672">:</span>25<span style="color:#f92672">)</span>
+</code></pre></div><h2 id="3-常见容器类型">3. 常见容器类型<a hidden class="anchor" aria-hidden="true" href="#3-常见容器类型">#</a></h2>
+<p>在阅读完对应的容器接口与迭代器接口代码以及注释之后，就可以开始分析具体的容器类型如 <code>List</code>，<code>Set</code>，<code>Map</code> 的实现了。</p>
+<h3 id="list">List<a hidden class="anchor" aria-hidden="true" href="#list">#</a></h3>
+<p>List 接口提供了一个特殊的 <code>ListIterator</code> 迭代器，它允许元素的插入与替换，同时支持获取对应索引处的迭代器。</p>
+<p>值得注意的是，如果允许 List 对象存储自身，那么 <code>equals()</code> 与 <code>hashCode()</code> 可能不会正常工作。</p>
+<h4 id="listof-与-unmodifiable-list"><code>List.of()</code> 与 Unmodifiable List<a hidden class="anchor" aria-hidden="true" href="#listof-与-unmodifiable-list">#</a></h4>
+<p>List 中还提供了 <code>of()</code> 与 <code>copyOf()</code> 方法返回不可修改的 List 对象。这里摘录几条注释中关于不可修改对象的说明：</p>
+<blockquote>
+<ul>
+<li>They are unmodifiable. Elements cannot be added, removed, or replaced. Calling any mutator method on the List will always cause UnsupportedOperationException to be thrown. However, if the contained elements are themselves mutable, this may cause the List&rsquo;s contents to appear to change.</li>
+<li>They disallow null elements. Attempts to create them with null elements result in NullPointerException.</li>
+<li>The lists and their subList views implement the RandomAccess interface.</li>
+</ul>
+</blockquote>
+<p>我们以 <code>of()</code> 为例，观察在 List 接口中的默认实现，<code>of()</code> 方法提供了很多中重载方法，但是我不太清楚为什么需要这么多。。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">// List.java
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">static</span> <span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;</span> List<span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">of</span><span style="color:#f92672">(</span>E<span style="color:#f92672">...</span> elements<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">switch</span> <span style="color:#f92672">(</span>elements<span style="color:#f92672">.</span><span style="color:#a6e22e">length</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span> <span style="color:#75715e">// implicit null check of elements
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">case</span> 0<span style="color:#f92672">:</span>
+            <span style="color:#a6e22e">@SuppressWarnings</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;unchecked&#34;</span><span style="color:#f92672">)</span>
+            var list <span style="color:#f92672">=</span> <span style="color:#f92672">(</span>List<span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;)</span> ImmutableCollections<span style="color:#f92672">.</span><span style="color:#a6e22e">EMPTY_LIST</span><span style="color:#f92672">;</span>
+            <span style="color:#66d9ef">return</span> list<span style="color:#f92672">;</span>
+        <span style="color:#66d9ef">case</span> 1<span style="color:#f92672">:</span>
+            <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> ImmutableCollections<span style="color:#f92672">.</span><span style="color:#a6e22e">List12</span><span style="color:#f92672">&lt;&gt;(</span>elements<span style="color:#f92672">[</span>0<span style="color:#f92672">]);</span>
+        <span style="color:#66d9ef">case</span> 2<span style="color:#f92672">:</span>
+            <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> ImmutableCollections<span style="color:#f92672">.</span><span style="color:#a6e22e">List12</span><span style="color:#f92672">&lt;&gt;(</span>elements<span style="color:#f92672">[</span>0<span style="color:#f92672">],</span> elements<span style="color:#f92672">[</span>1<span style="color:#f92672">]);</span>
+        <span style="color:#66d9ef">default</span><span style="color:#f92672">:</span>
+            <span style="color:#66d9ef">return</span> ImmutableCollections<span style="color:#f92672">.</span><span style="color:#a6e22e">listFromArray</span><span style="color:#f92672">(</span>elements<span style="color:#f92672">);</span>
+    <span style="color:#f92672">}</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>很明显，这里返回的不可修改的 List 对象被定义在 ImmutableCollections 类中，如果传入的元素是一个或者两个，那么返回对象动态类型是 <code>List12</code>，否则 <code>ListN</code>。在 ImmutableCollections 中对于空的 Unmodifiable List 有专门的定义。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">// ImmutableCollections.java
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">final</span> ListN<span style="color:#f92672">&lt;?&gt;</span> EMPTY_LIST<span style="color:#f92672">;</span>
+<span style="color:#f92672">{</span>
+    <span style="color:#75715e">// 初始化
+</span><span style="color:#75715e"></span>    EMPTY_LIST <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> ListN<span style="color:#f92672">&lt;&gt;(</span><span style="color:#66d9ef">new</span> Object<span style="color:#f92672">[</span>0<span style="color:#f92672">],</span> <span style="color:#66d9ef">false</span><span style="color:#f92672">);</span>
+    <span style="color:#f92672">...</span>
+<span style="color:#f92672">}</span>
+<span style="color:#66d9ef">static</span> <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">List12</span><span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;</span> <span style="color:#66d9ef">extends</span> AbstractImmutableList<span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;</span>
+        <span style="color:#66d9ef">implements</span> Serializable <span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> E e0<span style="color:#f92672">;</span>
+    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> Object e1<span style="color:#f92672">;</span>
+    List12<span style="color:#f92672">(</span>E e0<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">e0</span> <span style="color:#f92672">=</span> Objects<span style="color:#f92672">.</span><span style="color:#a6e22e">requireNonNull</span><span style="color:#f92672">(</span>e0<span style="color:#f92672">);</span>
+        <span style="color:#75715e">// Use EMPTY as a sentinel for an unused element: not using null
+</span><span style="color:#75715e"></span>        <span style="color:#75715e">// enables constant folding optimizations over single-element lists
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">e1</span> <span style="color:#f92672">=</span> EMPTY<span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span>
+    List12<span style="color:#f92672">(</span>E e0<span style="color:#f92672">,</span> E e1<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">e0</span> <span style="color:#f92672">=</span> Objects<span style="color:#f92672">.</span><span style="color:#a6e22e">requireNonNull</span><span style="color:#f92672">(</span>e0<span style="color:#f92672">);</span>
+        <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">e1</span> <span style="color:#f92672">=</span> Objects<span style="color:#f92672">.</span><span style="color:#a6e22e">requireNonNull</span><span style="color:#f92672">(</span>e1<span style="color:#f92672">);</span>
+    <span style="color:#f92672">}</span>
+    <span style="color:#f92672">...</span>
+<span style="color:#f92672">}</span>
+
+<span style="color:#66d9ef">static</span> <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">ListN</span><span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;</span> <span style="color:#66d9ef">extends</span> AbstractImmutableList<span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;</span>
+        <span style="color:#66d9ef">implements</span> Serializable <span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> E<span style="color:#f92672">[]</span> elements<span style="color:#f92672">;</span>
+    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">boolean</span> allowNulls<span style="color:#f92672">;</span>
+
+    <span style="color:#75715e">// caller must ensure that elements has no nulls if allowNulls is false
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">private</span> <span style="color:#a6e22e">ListN</span><span style="color:#f92672">(</span>E<span style="color:#f92672">[]</span> elements<span style="color:#f92672">,</span> <span style="color:#66d9ef">boolean</span> allowNulls<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">elements</span> <span style="color:#f92672">=</span> elements<span style="color:#f92672">;</span>
+        <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">allowNulls</span> <span style="color:#f92672">=</span> allowNulls<span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span>
+    <span style="color:#f92672">...</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>可以看到 <code>ListN</code> 实质是将数组进行包装实现不可变 List。</p>
+<p>List 接口中对于迭代器的实现仍然没有做出具体的描述，我们继续深入到具体的实现，查看 <code>ArrayList</code> 是如何实现迭代器以及如何使用迭代器对 List 元素进行修改。同时由于 LSP 原则，理论上我们可以确定 <code>LinkedList</code> 对于迭代器的行为应该表现的与 <code>ArrayList</code> 相同，所以只分析一个也是可以的。</p>
+<h4 id="arraylistjava">ArrayList.java<a hidden class="anchor" aria-hidden="true" href="#arraylistjava">#</a></h4>
+<p>直奔主题，我们来看迭代器的实现：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">// ArratList.java
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">public</span> Iterator<span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">iterator</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> Itr<span style="color:#f92672">();</span>
+<span style="color:#f92672">}</span>
+
+<span style="color:#66d9ef">private</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Itr</span> <span style="color:#66d9ef">implements</span> Iterator<span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;</span> <span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">int</span> cursor<span style="color:#f92672">;</span>       <span style="color:#75715e">// index of next element to return
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">int</span> lastRet <span style="color:#f92672">=</span> <span style="color:#f92672">-</span>1<span style="color:#f92672">;</span> <span style="color:#75715e">// index of last element returned; -1 if no such
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">int</span> expectedModCount <span style="color:#f92672">=</span> modCount<span style="color:#f92672">;</span>
+
+    <span style="color:#75715e">// prevent creating a synthetic constructor
+</span><span style="color:#75715e"></span>    Itr<span style="color:#f92672">()</span> <span style="color:#f92672">{}</span>
+
+    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">boolean</span> <span style="color:#a6e22e">hasNext</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">return</span> cursor <span style="color:#f92672">!=</span> size<span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span>
+
+    <span style="color:#a6e22e">@SuppressWarnings</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;unchecked&#34;</span><span style="color:#f92672">)</span>
+    <span style="color:#66d9ef">public</span> E <span style="color:#a6e22e">next</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+        checkForComodification<span style="color:#f92672">();</span>
+        <span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> cursor<span style="color:#f92672">;</span>
+        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>i <span style="color:#f92672">&gt;=</span> size<span style="color:#f92672">)</span>
+            <span style="color:#66d9ef">throw</span> <span style="color:#66d9ef">new</span> NoSuchElementException<span style="color:#f92672">();</span>
+        Object<span style="color:#f92672">[]</span> elementData <span style="color:#f92672">=</span> ArrayList<span style="color:#f92672">.</span><span style="color:#a6e22e">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">elementData</span><span style="color:#f92672">;</span>
+        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>i <span style="color:#f92672">&gt;=</span> elementData<span style="color:#f92672">.</span><span style="color:#a6e22e">length</span><span style="color:#f92672">)</span>
+            <span style="color:#66d9ef">throw</span> <span style="color:#66d9ef">new</span> ConcurrentModificationException<span style="color:#f92672">();</span>
+        cursor <span style="color:#f92672">=</span> i <span style="color:#f92672">+</span> 1<span style="color:#f92672">;</span>
+        <span style="color:#66d9ef">return</span> <span style="color:#f92672">(</span>E<span style="color:#f92672">)</span> elementData<span style="color:#f92672">[</span>lastRet <span style="color:#f92672">=</span> i<span style="color:#f92672">];</span>
+    <span style="color:#f92672">}</span>
+
+    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">remove</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>lastRet <span style="color:#f92672">&lt;</span> 0<span style="color:#f92672">)</span>
+            <span style="color:#66d9ef">throw</span> <span style="color:#66d9ef">new</span> IllegalStateException<span style="color:#f92672">();</span>
+        checkForComodification<span style="color:#f92672">();</span>
+        
+        <span style="color:#66d9ef">try</span> <span style="color:#f92672">{</span>
+            ArrayList<span style="color:#f92672">.</span><span style="color:#a6e22e">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">remove</span><span style="color:#f92672">(</span>lastRet<span style="color:#f92672">);</span>
+            cursor <span style="color:#f92672">=</span> lastRet<span style="color:#f92672">;</span>
+            lastRet <span style="color:#f92672">=</span> <span style="color:#f92672">-</span>1<span style="color:#f92672">;</span>
+            expectedModCount <span style="color:#f92672">=</span> modCount<span style="color:#f92672">;</span>
+        <span style="color:#f92672">}</span> <span style="color:#66d9ef">catch</span> <span style="color:#f92672">(</span>IndexOutOfBoundsException ex<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            <span style="color:#66d9ef">throw</span> <span style="color:#66d9ef">new</span> ConcurrentModificationException<span style="color:#f92672">();</span>
+        <span style="color:#f92672">}</span>
+    <span style="color:#f92672">}</span>
+
+    <span style="color:#a6e22e">@Override</span>
+    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">forEachRemaining</span><span style="color:#f92672">(</span>Consumer<span style="color:#f92672">&lt;?</span> <span style="color:#66d9ef">super</span> E<span style="color:#f92672">&gt;</span> action<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#f92672">...</span>
+    <span style="color:#f92672">}</span>
+
+    <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">checkForComodification</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>modCount <span style="color:#f92672">!=</span> expectedModCount<span style="color:#f92672">)</span>
+            <span style="color:#66d9ef">throw</span> <span style="color:#66d9ef">new</span> ConcurrentModificationException<span style="color:#f92672">();</span>
+    <span style="color:#f92672">}</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>在内部我们可以看到迭代器通过 <code>cursor</code> 来标记当前的索引位置，<code>lastRet</code> 存储上一次元素的索引。</p>
+<p><code>next()</code> 实现简单的将 <code>cursor</code> 更新，并且返回更新之前 <code>cursor</code> 索引处的元素。</p>
+<p>在 <code>remove()</code> 实现中，首先判断 <code>lastRet</code> 是否存在，如果不存在就抛出异常；如果存在，就通过调用 <code>ArrayList.this.remove(lastRet)</code> 将对应之前遍历的元素删除，并且将 <code>lastRet</code> 设置为-1，这也表明在一次循环中，一次 <code>next()</code> 调用至多只能调用一次 <code>iter.remove()</code>。</p>
+<p><code>ArrayList</code> 中使用 <code>modCount</code> 记录内部元素的修改，迭代器通过判断 <code>expectedModCount</code> 与 <code>modCount</code> 相等确保 List 的元素不会在迭代器遍历过程中被外部 <code>add()</code> 等方法调用改变。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> E <span style="color:#a6e22e">remove</span><span style="color:#f92672">(</span><span style="color:#66d9ef">int</span> index<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    Objects<span style="color:#f92672">.</span><span style="color:#a6e22e">checkIndex</span><span style="color:#f92672">(</span>index<span style="color:#f92672">,</span> size<span style="color:#f92672">);</span>
+    <span style="color:#66d9ef">final</span> Object<span style="color:#f92672">[]</span> es <span style="color:#f92672">=</span> elementData<span style="color:#f92672">;</span>
+
+    <span style="color:#a6e22e">@SuppressWarnings</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;unchecked&#34;</span><span style="color:#f92672">)</span> E oldValue <span style="color:#f92672">=</span> <span style="color:#f92672">(</span>E<span style="color:#f92672">)</span> es<span style="color:#f92672">[</span>index<span style="color:#f92672">];</span>
+    fastRemove<span style="color:#f92672">(</span>es<span style="color:#f92672">,</span> index<span style="color:#f92672">);</span>
+
+    <span style="color:#66d9ef">return</span> oldValue<span style="color:#f92672">;</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>上面给出的是 <code>ArrayList</code> 中的 <code>remove()</code> 方法。不难发现，<code>remove()</code> 并没有修改 <code>modCount</code>，因此如果我们在 <code>ArrayList</code> 使用迭代器遍历元素过程中直接调用 <code>ArrayList.remove()</code>，在某些情况下并不会抛出异常，但是实际上容器内的结构已经出现变化，最终产生错误的结果。因此在使用迭代器的过程中，最好使用迭代器提供的 <code>remove()</code> 方法，同时如果需要对容器添加或者修改元素，可以使用 List 提供的 <code>listIterator</code> 迭代器。</p>
+<h2 id="后记">后记<a hidden class="anchor" aria-hidden="true" href="#后记">#</a></h2>
+<p>总体上来说，这是我第一次尝试阅读库代码，并且去了解 java 语言基本数据类型的实现。这些源代码的阅读难度不大，甚至可以说比较轻松和简单，但是同样具有意义。一个是通过这次的阅读，将之前上课时一些模糊的概念重新的梳理了一遍，对复习有一定的帮助，另外也让自己在阅读源码这一方面的学习开了一个头。同样，由于时间的原因，最初开始写这篇博客时规划的内容一部分被暂时搁置，只能寄希望于马上结束考试周赶紧补完吧，毕竟是自己写的东西，虎头蛇尾的感觉确实很让人不爽。有些东西自己目前感觉表达的不是很好，也不知道在阅读过程中学习到的东西有没有很好的表达出来。但是既然步子已经迈开了，以后想必会更加习惯这样的过程，感觉也还可以，就先这样吧。</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://ognimalf.github.io/tags/java/">java</a></li>
+      <li><a href="https://ognimalf.github.io/tags/%E8%BD%AF%E4%BB%B6%E6%9E%84%E9%80%A0/">软件构造</a></li>
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<script src="https://cdn.bootcss.com/mermaid/8.0.0-rc.8/mermaid.min.js"></script>
+<footer class="footer">
+    <span>&copy; 2022 <a href="https://ognimalf.github.io">Salieri&#39;s Blog</a></span>
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://git.io/hugopapermod" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerText = 'copy';
+
+        function copyingDone() {
+            copybutton.innerText = 'copied!';
+            setTimeout(() => {
+                copybutton.innerText = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

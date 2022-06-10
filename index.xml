@@ -6,7 +6,16 @@
     <description>Recent content on Salieri&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 03 Jun 2022 07:43:06 +0900</lastBuildDate><atom:link href="https://ognimalf.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 06 Jun 2022 09:17:20 +0900</lastBuildDate><atom:link href="https://ognimalf.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Iterator</title>
+      <link>https://ognimalf.github.io/posts/iterator/</link>
+      <pubDate>Mon, 06 Jun 2022 09:17:20 +0900</pubDate>
+      
+      <guid>https://ognimalf.github.io/posts/iterator/</guid>
+      <description>java中collection类型迭代器源码阅读,以及collection类型可变与不可变类型包装器分析</description>
+    </item>
+    
     <item>
       <title>java泛型梳理</title>
       <link>https://ognimalf.github.io/archives/generics/</link>
