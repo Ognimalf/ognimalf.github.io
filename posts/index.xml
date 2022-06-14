@@ -6,7 +6,16 @@
     <description>Recent content in Posts on Salieri&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 06 Jun 2022 09:17:20 +0900</lastBuildDate><atom:link href="https://ognimalf.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 06 Jun 2022 22:09:39 +0900</lastBuildDate><atom:link href="https://ognimalf.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Summary</title>
+      <link>https://ognimalf.github.io/posts/summary/</link>
+      <pubDate>Mon, 06 Jun 2022 22:09:39 +0900</pubDate>
+      
+      <guid>https://ognimalf.github.io/posts/summary/</guid>
+      <description>软件构造课程知识点总结</description>
+    </item>
+    
     <item>
       <title>java容器与迭代器简析</title>
       <link>https://ognimalf.github.io/posts/iterator/</link>
