@@ -6,39 +6,20 @@
     <description>Recent content in 软件构造 on Salieri&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 09 Jun 2022 22:09:39 +0900</lastBuildDate><atom:link href="https://ognimalf.github.io/categories/%E8%BD%AF%E4%BB%B6%E6%9E%84%E9%80%A0/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 06 Jun 2022 22:09:39 +0900</lastBuildDate><atom:link href="https://ognimalf.github.io/categories/%E8%BD%AF%E4%BB%B6%E6%9E%84%E9%80%A0/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>软件构造课程知识点总结</title>
+      <title>软件构造知识点总结</title>
       <link>https://ognimalf.github.io/posts/summary/</link>
-      <pubDate>Thu, 09 Jun 2022 22:09:39 +0900</pubDate>
+      <pubDate>Mon, 06 Jun 2022 22:09:39 +0900</pubDate>
       
       <guid>https://ognimalf.github.io/posts/summary/</guid>
-      <description>软件构造知识点总结。主要是为了复习用，因此没有太注意格式。
-1. 多维度视图 阶段: 构造时/运行时视图
-动态性: 时刻/阶段视图
-构造对象的层次: 代码/构件视图
-重点，一定要记。
-构造阶段：
- 时刻视图：特定时刻的软件形态 阶段视图：软件形态随时间变化 代码视图：代码的逻辑组织 构件视图：代码的物理组织  运行时阶段：
- 时刻视图：逻辑/物理实体在内存/硬件环境中特定时刻的形态如何 阶段视图：逻辑/物理实体在内存/硬件环境中的形态随时间如何变化 代码视图：逻辑实体在内存中如何呈现 构件视图：物理实体在物理硬件环境中如何呈现  软件系统的质量因素 外部质量取决于内部质量
-外部质量因素 影响用户
- 正确性：最重要的指标 健壮性 可扩展性 可复用性 兼容性 性能 可移植性  正确性与健壮性：可靠性
-可扩展性与可复用性：模块性
-其他因素：易用性，功能性，及时性，可验证性，完整性，可修复性，经济型
-内部质量因素 可读性，可理解性，Clearness，规模，复杂度
-内部质量因素通常用作测量外部质量因素的部分指标
-2. 软件测试 残留缺陷率：每一千行代码残留的bug
- 1-10：典型行业软件 0.1-1：高质量的验证，java 库可能达到这个级别 0.01-0.1：非常好，安全的验证。NASA 与 Praxis 这类公司可能达到的级别  单元测试，集成测试，系统测试，回归测试。
-静态测试，动态测试：靠眼睛看/实际运行程序执行测试样例
-assertEquals(expected, actual); 黑盒与白盒测试 黑盒测试：对程序外部表现出来的行为进行测试
-黑盒测试检查的错误类型：
- 错误或缺失的功能 接口错误 数据结构的错误或者外部数据库连接错误 行为或性能错误 初始化或终止错误  黑盒测试样例依照规约与方法要求构造，检查程序是否符合规约</description>
+      <description>软件构造知识点总结</description>
     </item>
     
     <item>
       <title>java容器与迭代器简析</title>
       <link>https://ognimalf.github.io/posts/iterator/</link>
-      <pubDate>Mon, 06 Jun 2022 09:17:20 +0900</pubDate>
+      <pubDate>Fri, 03 Jun 2022 09:17:20 +0900</pubDate>
       
       <guid>https://ognimalf.github.io/posts/iterator/</guid>
       <description>java中collection类型源码阅读,以及collection类型可变与不可变类型包装器分析</description>
@@ -47,7 +28,7 @@ assertEquals(expected, actual); 黑盒与白盒测试 黑盒测试：对程序�
     <item>
       <title>java泛型梳理</title>
       <link>https://ognimalf.github.io/archives/generics/</link>
-      <pubDate>Fri, 03 Jun 2022 07:43:06 +0900</pubDate>
+      <pubDate>Mon, 30 May 2022 07:43:06 +0900</pubDate>
       
       <guid>https://ognimalf.github.io/archives/generics/</guid>
       <description>java泛型的知识点梳理</description>
